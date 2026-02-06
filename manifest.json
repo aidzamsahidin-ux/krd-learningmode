@@ -1,7 +1,7 @@
 {
 "name": "Kit Roda Darab PdP Pro",
 "short_name": "RodaDarab",
-"start_url": "index.html",
+"start_url": ".",
 "display": "standalone",
 "background_color": "#e0e7ff",
 "theme_color": "#4f46e5",
