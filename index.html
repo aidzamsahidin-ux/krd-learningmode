@@ -15,11 +15,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <!-- Tambah QRCode.js untuk penjanaan QR offline yang stabil -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700;900&display=swap');
 
         :root {
             --primary: #312e81; 
@@ -40,10 +39,10 @@
         }
 
         .glass-card {
-            background: rgba(255, 255, 255, 0.98);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px);
-            border: 2px solid rgba(79, 70, 229, 0.1);
-            box-shadow: 0 10px 35px rgba(31, 38, 135, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
         }
 
         .mnl-active {
@@ -54,216 +53,222 @@
             z-index: 10;
         }
 
-        /* Responsive MNL */
-        .mnl-item { width: 2.25rem; height: 2.25rem; transition: all 0.3s ease; }
+        .mnl-item { width: 2.5rem; height: 2.5rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         @media (min-width: 1024px) {
             .mnl-item { width: 4.5rem; height: 4.5rem; border-width: 3px; }
             .mnl-item span:first-child { font-size: 1.5rem !important; }
-            .mnl-item span:last-child { font-size: 0.875rem !important; }
+            .mnl-item span:last-child { font-size: 0.75rem !important; }
         }
 
         .step-box {
-            border-left: 8px solid var(--accent); background: #ffffff; padding: 1.25rem;
-            border-radius: 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            border-left: 6px solid var(--accent); background: #ffffff; padding: 1rem;
+            border-radius: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        .wheel-label, .ans-label { pointer-events: none; font-weight: 700; }
-        .sector-highlight { stroke: var(--accent); stroke-width: 6; fill: #f5f7ff !important; }
+        .wheel-label, .ans-label { pointer-events: none; font-weight: 800; }
+        .sector-highlight { stroke: var(--accent); stroke-width: 5px; fill: #e0e7ff !important; }
 
-        /* LCD Timer */
         .lcd-timer {
-            font-size: clamp(4rem, 15vw, 15rem); line-height: 1; font-weight: 900; color: #ffffff;
-            text-shadow: 0 0 40px rgba(79, 70, 229, 0.8);
+            font-size: clamp(5rem, 18vw, 16rem); line-height: 0.9; font-weight: 900; color: #ffffff;
+            text-shadow: 0 4px 30px rgba(0,0,0,0.3); letter-spacing: -0.05em;
         }
 
-        .custom-scroll::-webkit-scrollbar { width: 5px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
         @media print {
             body > *:not(#printArea) { display: none !important; }
             #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white; z-index: 9999; }
-            .page-break { page-break-after: always; display: block; min-height: 100vh; position: relative; padding: 20px; }
-            /* Paksa cetakan background graphics */
+            .page-break { page-break-after: always; display: block; height: 100vh; position: relative; padding: 20px; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
 
-        #reader { width: 100% !important; border-radius: 1.5rem; overflow: hidden; }
-        .text-pdp-primary { color: #1e1b4b; } .text-pdp-accent { color: #4338ca; }
-
-        /* Leaderboard Bar Animation */
-        @keyframes growBar { from { width: 0; } to { width: var(--w); } }
-        .bar-fill { animation: growBar 1.5s ease-out forwards; }
+        #reader, #remoteScannerVideo { width: 100% !important; border-radius: 1.5rem; overflow: hidden; }
+        
+        .leaderboard-item { transition: all 0.5s ease-out; transform: translateY(20px); opacity: 0; }
+        .leaderboard-item.show { transform: translateY(0); opacity: 1; }
     </style>
 </head>
-<body class="flex flex-col">
+<body class="flex flex-col text-sm md:text-base">
 
     <!-- Header -->
-    <header class="flex justify-between items-center p-3 md:p-5 no-print shrink-0 bg-white/50 border-b border-indigo-100">
+    <header class="flex justify-between items-center p-3 md:p-4 no-print shrink-0 bg-white/60 backdrop-blur-md border-b border-indigo-100 z-10 sticky top-0">
         <div class="flex items-center gap-3">
-            <h1 class="text-2xl md:text-3xl font-black text-pdp-primary tracking-tighter">CirculoX</h1>
-            <div id="connStatus" class="hidden sm:flex px-3 py-1 bg-gray-200 text-gray-600 text-[10px] font-black rounded-full uppercase tracking-wider">OFFLINE</div>
+            <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg">C</div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-black text-indigo-900 leading-none">CirculoX</h1>
+                <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Versi Sekolah 3.0</p>
+            </div>
         </div>
         <div class="flex gap-2">
-            <button onclick="openLCDMode()" class="p-2.5 bg-indigo-950 text-white rounded-xl shadow-lg hover:scale-105 transition-all" title="Mod LCD">🖥️</button>
-            <button onclick="openStudentManager()" class="p-2.5 bg-emerald-700 text-white rounded-xl shadow-lg hover:scale-105 transition-all" title="Murid">👥</button>
-            <button onclick="toggleScanner()" class="p-2.5 bg-amber-600 text-white rounded-xl shadow-lg hover:scale-105 transition-all" title="Imbas">📷</button>
-            <button onclick="openSynergyModal()" class="p-2.5 bg-blue-600 text-white rounded-xl shadow-lg hover:scale-105 transition-all animate-pulse" title="Sinergi">📡</button>
+            <button onclick="openLCDMode()" class="p-2.5 bg-indigo-900 text-white rounded-xl shadow-lg hover:bg-black transition-all flex items-center gap-2">
+                <span class="text-lg">🖥️</span> <span class="hidden md:inline font-bold">LCD</span>
+            </button>
+            <button onclick="openStudentManager()" class="p-2.5 bg-emerald-600 text-white rounded-xl shadow-lg hover:bg-emerald-700 transition-all flex items-center gap-2">
+                <span class="text-lg">👥</span> <span class="hidden md:inline font-bold">Rekod</span>
+            </button>
+            <button onclick="toggleScanner()" class="p-2.5 bg-amber-500 text-white rounded-xl shadow-lg hover:bg-amber-600 transition-all flex items-center gap-2">
+                <span class="text-lg">📷</span> <span class="hidden md:inline font-bold">Imbas</span>
+            </button>
         </div>
     </header>
 
     <!-- Main Workspace -->
-    <main class="flex-grow flex flex-col lg:grid lg:grid-cols-12 gap-4 p-3 md:p-5 lg:overflow-hidden no-print">
-        
+    <main class="flex-grow flex flex-col lg:grid lg:grid-cols-12 gap-4 p-3 md:p-6 lg:overflow-hidden no-print">
+        <!-- (Kandungan Utama Kekal Sama Seperti Sebelum Ini) -->
         <!-- Left: Controls -->
         <aside class="lg:col-span-3 flex flex-col gap-4 lg:overflow-hidden">
-            <div class="glass-card p-5 rounded-[2rem] border-b-8 border-indigo-600">
+            <div class="glass-card p-5 rounded-[2rem] border-b-4 border-indigo-500">
                 <div class="space-y-3">
-                    <label class="text-[10px] font-black text-indigo-900 uppercase tracking-widest pl-1">Pilih Kumpulan</label>
-                    <select id="classDropdown" onchange="loadStudentsByClass()" class="w-full bg-indigo-50 border-2 border-indigo-200 rounded-xl px-4 py-2.5 font-bold text-indigo-900 text-sm outline-none">
+                    <label class="text-[10px] font-black text-indigo-400 uppercase tracking-widest pl-1">Tetapan Murid</label>
+                    <select id="classDropdown" onchange="loadStudentsByClass()" class="w-full bg-indigo-50/50 border-2 border-indigo-100 rounded-xl px-4 py-2.5 font-bold text-indigo-900 text-sm outline-none focus:border-indigo-500 transition-colors">
                         <option value="">Pilih Kelas...</option>
                     </select>
-                    <select id="studentDropdown" onchange="selectStudentFromList()" class="w-full bg-white border-2 border-gray-200 rounded-xl px-4 py-2.5 font-bold text-gray-700 text-sm outline-none">
+                    <select id="studentDropdown" onchange="selectStudentFromList()" class="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-2.5 font-bold text-gray-700 text-sm outline-none focus:border-indigo-500 transition-colors">
                         <option value="">Pilih Murid...</option>
                     </select>
                 </div>
-                <div id="activeStudentInfo" class="mt-4 pt-4 border-t border-indigo-50 hidden">
-                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Murid Aktif</p>
+                <div id="activeStudentInfo" class="mt-4 pt-4 border-t border-dashed border-indigo-200 hidden">
+                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Sedang Aktif</p>
                     <div id="studentDetail">
-                        <p id="dispName" class="text-xl font-black text-pdp-primary truncate leading-tight"></p>
-                        <p id="dispClass" class="text-sm font-bold text-indigo-500"></p>
+                        <p id="dispName" class="text-lg font-black text-indigo-900 leading-tight truncate"></p>
+                        <p id="dispClass" class="text-xs font-bold text-indigo-500"></p>
                     </div>
                 </div>
             </div>
 
-            <div class="glass-card p-5 rounded-[2rem] lg:flex-grow lg:overflow-y-auto custom-scroll space-y-5">
+            <div class="glass-card p-5 rounded-[2rem] lg:flex-grow lg:overflow-y-auto custom-scroll space-y-6">
                 <div>
-                    <h3 class="text-[10px] font-black text-gray-400 uppercase mb-3 tracking-widest">Mod Pembelajaran</h3>
+                    <h3 class="text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest">Mod Interaksi</h3>
                     <div class="grid grid-cols-2 gap-3">
-                        <button onclick="setMode('learn')" id="btnLearn" class="py-3 rounded-xl font-black text-sm border-2 border-indigo-600 bg-indigo-600 text-white shadow-lg">Belajar</button>
-                        <button onclick="setMode('practice')" id="btnPractice" class="py-3 rounded-xl font-black text-sm border-2 border-indigo-100 text-indigo-900 hover:bg-indigo-50">Latihan</button>
+                        <button onclick="setMode('learn')" id="btnLearn" class="py-3 rounded-xl font-bold text-sm border-2 border-indigo-600 bg-indigo-600 text-white shadow-lg transition-transform active:scale-95">Belajar</button>
+                        <button onclick="setMode('practice')" id="btnPractice" class="py-3 rounded-xl font-bold text-sm border-2 border-indigo-100 text-indigo-900 hover:bg-indigo-50 transition-transform active:scale-95">Latihan</button>
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-[10px] font-black text-gray-400 uppercase mb-3 tracking-widest">Sifir Utama</h3>
-                    <div class="grid grid-cols-3 gap-2.5">
+                    <h3 class="text-[10px] font-black text-gray-400 uppercase mb-2 tracking-widest">Pilih Sifir</h3>
+                    <div class="grid grid-cols-3 gap-2">
                         <script>
-                            for(let i=1; i<=9; i++) document.write(`<button onclick="selectSifir(${i})" id="sifir-${i}" class="sifir-btn h-12 rounded-xl font-black text-xl border-2 border-gray-100 bg-white hover:border-indigo-400 text-indigo-900 shadow-sm transition-all">${i}</button>`);
+                            for(let i=1; i<=9; i++) document.write(`<button onclick="selectSifir(${i})" id="sifir-${i}" class="sifir-btn h-12 rounded-xl font-black text-lg border-2 border-gray-100 bg-white hover:border-indigo-400 text-gray-600 transition-all hover:-translate-y-0.5">${i}</button>`);
                         </script>
                     </div>
                 </div>
-                <div id="scoreCard" class="hidden bg-white p-4 rounded-2xl border-2 border-emerald-100 border-b-8 border-b-emerald-600">
+                <div id="scoreCard" class="hidden bg-white p-4 rounded-2xl border-2 border-emerald-100 border-b-4 border-b-emerald-500">
                     <div class="flex justify-between items-center mb-2">
-                        <span class="font-black text-emerald-800 text-xs uppercase">Skor</span>
-                        <span class="text-3xl font-black text-emerald-600" id="currentScore">0/0</span>
+                        <span class="font-black text-emerald-800 text-xs uppercase tracking-wider">Skor</span>
+                        <span class="text-2xl font-black text-emerald-600" id="currentScore">0/0</span>
                     </div>
-                    <div class="flex justify-between items-center bg-emerald-50 p-3 rounded-xl">
+                    <div class="flex justify-between items-center bg-emerald-50 p-2 rounded-lg">
                         <span class="text-[10px] font-black text-emerald-700">MASA</span>
-                        <span class="text-2xl font-mono font-black text-emerald-800" id="timerDisplay">00:00</span>
+                        <span class="text-lg font-mono font-black text-emerald-800" id="timerDisplay">00:00</span>
                     </div>
                 </div>
-                <button onclick="resetApp()" class="w-full py-2 text-gray-400 font-bold text-[10px] uppercase border-2 border-transparent hover:text-red-500">Padam Sesi</button>
+                <button onclick="resetApp()" class="w-full py-2 text-gray-400 font-bold text-[10px] uppercase hover:text-red-500 transition-colors">Reset Sesi</button>
             </div>
         </aside>
 
         <!-- Center: Visualization -->
-        <article class="lg:col-span-5 flex flex-col gap-4 lg:overflow-hidden">
-            <div class="glass-card p-4 rounded-[2rem] border-t-8 border-indigo-600 overflow-x-auto custom-scroll shrink-0">
-                <h3 class="text-center font-black text-indigo-900 mb-4 text-[11px] uppercase tracking-widest">Garis Nombor Ajaib</h3>
-                <div class="flex justify-between items-center gap-3 md:px-4 min-w-[380px] lg:min-w-0">
+        <article class="lg:col-span-5 flex flex-col gap-4 lg:overflow-hidden relative">
+            <div class="glass-card p-4 rounded-[2rem] border-t-4 border-indigo-600 overflow-x-auto custom-scroll shrink-0">
+                <h3 class="text-center font-black text-indigo-900 mb-3 text-[10px] uppercase tracking-widest">Garis Nombor Ajaib</h3>
+                <div class="flex justify-between items-center gap-2 md:px-2 min-w-[350px] lg:min-w-0">
                     <script>
                         const mnlArr = ["+1", "+2", "+3", "+4", "±5", "-4", "-3", "-2", "-1"];
                         for(let i=1; i<=9; i++) {
-                            document.write(`<div id="mnl-${i}" class="mnl-item rounded-full bg-white border-2 border-gray-200 flex flex-col items-center justify-center transition-all shrink-0 shadow-sm"><span class="text-xs font-black text-pdp-primary">${i}</span><span class="text-[8px] font-black text-indigo-600">${mnlArr[i-1]}</span></div>`);
+                            document.write(`<div id="mnl-${i}" class="mnl-item rounded-full bg-white border-2 border-gray-200 flex flex-col items-center justify-center transition-all shrink-0 shadow-sm"><span class="text-xs md:text-sm font-black text-indigo-900">${i}</span><span class="text-[8px] md:text-[10px] font-bold text-indigo-500">${mnlArr[i-1]}</span></div>`);
                         }
                     </script>
                 </div>
             </div>
-            <div class="flex-grow flex items-center justify-center p-2 min-h-[350px]">
-                <div id="wheelWrapper" class="relative w-full aspect-square max-w-[420px] bg-white rounded-full shadow-2xl border-8 border-dashed border-indigo-50 flex items-center justify-center mx-auto transition-transform">
-                    <span class="text-gray-300 font-black text-center p-10 text-2xl uppercase tracking-tighter">Sila Pilih Sifir</span>
+            <div class="flex-grow flex items-center justify-center p-4 min-h-[300px]">
+                <div id="wheelWrapper" class="relative w-full aspect-square max-w-[420px] bg-white rounded-full shadow-2xl border-4 border-dashed border-indigo-100 flex items-center justify-center mx-auto transition-transform duration-500">
+                    <span class="text-gray-300 font-black text-center p-10 text-xl uppercase tracking-widest">Pilih Sifir</span>
                 </div>
             </div>
         </article>
 
-        <!-- Right: Guide / Leaderboard -->
+        <!-- Right: Guide -->
         <aside class="lg:col-span-4 flex flex-col lg:overflow-hidden">
-            <div id="guidePanel" class="glass-card p-6 rounded-[2.5rem] flex flex-col border-l-[15px] border-indigo-800 shadow-xl h-full lg:overflow-hidden relative">
-                <!-- LCD Leaderboard Overlay (Hidden by default) -->
-                <div id="lcdLeaderboard" class="absolute inset-0 bg-white z-20 hidden flex flex-col p-6 overflow-hidden">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-black text-indigo-900 uppercase tracking-tighter">🏆 Top 5 Terpantas</h2>
-                        <button onclick="closeLeaderboard()" class="text-gray-400 hover:text-red-500 text-2xl">×</button>
-                    </div>
-                    <div id="leaderboardContent" class="flex-grow overflow-y-auto space-y-4"></div>
-                </div>
-
+            <div id="guidePanel" class="glass-card p-6 rounded-[2rem] flex flex-col border-l-8 border-indigo-800 shadow-xl h-full lg:overflow-hidden">
                 <div id="guideContent" class="flex-grow lg:overflow-y-auto custom-scroll pr-2">
-                    <div class="text-center py-12">
-                        <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-600">💡</div>
-                        <h2 class="text-2xl font-black text-pdp-primary mb-3">Panduan PdP</h2>
-                        <p class="text-sm text-gray-500 font-bold leading-relaxed px-4">Pilih murid dan sifir untuk bermula.</p>
+                    <div class="text-center py-10 opacity-60">
+                        <div class="text-6xl mb-4">💡</div>
+                        <h2 class="text-xl font-black text-indigo-900 mb-2">Panduan PdP</h2>
+                        <p class="text-sm text-gray-500 font-bold">Pilih murid dan sifir untuk memulakan sesi interaktif.</p>
                     </div>
                 </div>
-                <div id="guideActions" class="mt-5 flex flex-col gap-3 shrink-0"></div>
+                <div id="guideActions" class="mt-4 flex flex-col gap-3 shrink-0"></div>
             </div>
         </aside>
     </main>
 
-    <!-- Synergy Modal (PeerJS Connection) -->
-    <div id="synergyModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden z-[80] flex flex-col items-center justify-center p-6 text-center">
-        <div class="glass-card w-full max-w-md p-8 rounded-[3rem] animate-fade-up border-t-[15px] border-blue-600 relative">
-            <button onclick="closeSynergyModal()" class="absolute top-4 right-6 text-gray-400 hover:text-red-500 text-3xl font-black">×</button>
-            <h2 class="text-2xl font-black text-indigo-900 mb-2">Sinergi CirculoX</h2>
-            <p class="text-xs text-indigo-400 font-bold mb-6 uppercase tracking-widest">Fungsi ini memerlukan Internet</p>
+    <!-- LCD / Countdown Mode (Host) -->
+    <div id="lcdModal" class="fixed inset-0 bg-indigo-950 hidden z-[100] flex flex-col items-center justify-center p-6 text-center">
+        <!-- Top Bar with Connection Info -->
+        <div class="absolute top-6 left-6 right-6 flex justify-between items-start">
+            <div class="text-left bg-indigo-900/50 p-4 rounded-2xl backdrop-blur-sm border border-indigo-700 flex gap-4">
+                <div id="hostQrContainer" class="bg-white p-2 rounded-lg w-24 h-24 flex items-center justify-center"></div>
+                <div>
+                    <p class="text-indigo-300 text-xs font-bold uppercase tracking-wider mb-1">Untuk Telefon Guru</p>
+                    <p class="text-white font-black text-lg leading-tight">Imbas Untuk<br>Remote Scan</p>
+                    <p id="peerIdDisplay" class="text-xs text-indigo-400 font-mono mt-2 select-all cursor-pointer">ID: ...</p>
+                </div>
+            </div>
             
-            <div id="synergyHostView" class="hidden space-y-6">
-                <div class="p-4 bg-white border-4 border-indigo-100 rounded-3xl inline-block">
-                    <img id="synergyQr" class="w-48 h-48" alt="QR Sambungan">
+            <div class="flex flex-col items-end gap-2">
+                <button onclick="closeLCDMode()" class="text-indigo-400 hover:text-white text-4xl font-black transition-colors">×</button>
+                <div class="flex items-center gap-2">
+                    <label class="text-indigo-300 text-xs font-bold uppercase">Pilih Kelas:</label>
+                    <select id="lcdClassFilter" onchange="filterLeaderboard()" class="bg-indigo-900 text-white border border-indigo-600 rounded-lg px-3 py-1 font-bold text-sm outline-none">
+                        <option value="all">SEMUA</option>
+                    </select>
                 </div>
-                <p class="text-sm font-bold text-gray-500 px-4">Imbas QR ini menggunakan Telefon Guru untuk menjadikan telefon sebagai alat kawalan jauh.</p>
-                <div class="animate-pulse text-xs font-black text-blue-600 bg-blue-50 py-2 rounded-lg">Menunggu sambungan...</div>
             </div>
+        </div>
 
-            <div id="synergyRemoteView" class="hidden space-y-6">
-                <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-200">
-                    <p class="text-emerald-700 font-black text-lg">Connected to LCD!</p>
+        <!-- Timer Center -->
+        <div class="flex flex-col items-center justify-center mt-10">
+            <h2 class="text-indigo-300 text-2xl md:text-4xl font-black uppercase tracking-[0.3em] mb-4 opacity-80 animate-pulse">Masa Berjalan</h2>
+            <div class="lcd-timer font-mono leading-none" id="lcdTimerDisplay">10:00</div>
+            
+            <div class="mt-8 flex items-center gap-4 bg-indigo-900/40 p-2 rounded-2xl backdrop-blur-sm">
+                <select id="lcdTimeSelect" class="bg-transparent text-white text-xl font-black outline-none cursor-pointer px-4 py-2 border-r border-indigo-700">
+                    <option value="300" class="bg-indigo-900">5 Minit</option>
+                    <option value="600" class="bg-indigo-900" selected>10 Minit</option>
+                    <option value="900" class="bg-indigo-900">15 Minit</option>
+                    <option value="custom" class="bg-indigo-900">Custom...</option>
+                </select>
+                <input type="number" id="lcdCustomTime" class="w-16 bg-white/10 text-white font-black text-center rounded-lg px-2 py-1 outline-none hidden" placeholder="Min">
+                
+                <div class="flex gap-2">
+                    <button onclick="startLcdCountdown()" id="lcdStartBtn" class="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-lg transition-all shadow-lg active:scale-95">MULA</button>
+                    <button onclick="resetLcdCountdown()" class="px-6 py-3 bg-indigo-700 hover:bg-indigo-600 text-indigo-100 rounded-xl font-black text-lg transition-all">RESET</button>
                 </div>
-                <p class="text-sm font-bold text-gray-500">Anda kini boleh menghantar data rekod dari telefon ini ke skrin LCD.</p>
-                <button onclick="sendLeaderboardToLCD()" class="w-full py-5 bg-indigo-700 text-white rounded-2xl font-black text-xl shadow-xl hover:bg-indigo-900 transition-all flex items-center justify-center gap-3">
-                    🚀 Hantar Carta Top 5
-                </button>
             </div>
+        </div>
 
-            <div id="synergyLoading" class="py-10">
-                <p class="font-black text-indigo-300 animate-pulse">Sedang menjana ID...</p>
+        <!-- Live Leaderboard -->
+        <div class="absolute bottom-6 left-6 right-6 h-1/3 bg-indigo-900/30 rounded-[2rem] border border-indigo-800 backdrop-blur-md overflow-hidden flex flex-col p-6">
+            <div class="flex justify-between items-center mb-4 border-b border-indigo-700/50 pb-2">
+                <h3 class="text-white font-black text-xl uppercase tracking-widest flex items-center gap-2">
+                    🏆 Ranking Terpantas <span id="leaderboardCount" class="bg-indigo-600 px-2 py-0.5 rounded text-xs">0</span>
+                </h3>
+            </div>
+            <div id="lcdLeaderboardList" class="flex-grow overflow-y-auto space-y-2 pr-2 custom-scroll">
+                <p class="text-indigo-400/50 font-bold text-center mt-10 uppercase tracking-widest">Menunggu guru mengimbas...</p>
             </div>
         </div>
     </div>
 
-    <!-- LCD / Countdown Mode -->
-    <div id="lcdModal" class="fixed inset-0 bg-indigo-950 hidden z-[100] flex flex-col items-center justify-center p-6 text-center">
-        <h2 class="text-white text-3xl font-black uppercase tracking-[0.3em] mb-10 opacity-80">Cabaran CirculoX</h2>
-        <div class="lcd-timer font-mono" id="lcdTimerDisplay">10:00</div>
-        
-        <!-- Timer Controls -->
-        <div class="flex items-center justify-center gap-4 mb-8">
-            <select id="lcdTimeSelect" class="bg-indigo-900 text-white border-2 border-indigo-700 rounded-xl px-4 py-2 font-bold text-lg outline-none cursor-pointer">
-                <option value="300">5 Minit</option>
-                <option value="600" selected>10 Minit</option>
-                <option value="900">15 Minit</option>
-                <option value="custom">Custom...</option>
-            </select>
-            <input type="number" id="lcdCustomTime" placeholder="Minit" class="hidden w-24 bg-white text-indigo-900 border-2 border-indigo-700 rounded-xl px-4 py-2 font-bold text-lg outline-none" min="1">
+    <!-- Remote Scanner Mode (Teacher Phone View) -->
+    <div id="remoteScannerModal" class="fixed inset-0 bg-gray-900 hidden z-[120] flex flex-col items-center justify-center p-6 text-center">
+        <h2 class="text-2xl font-black text-white mb-4 uppercase tracking-widest text-emerald-400 animate-pulse">• LIVE CONNECTION •</h2>
+        <div class="w-full max-w-sm bg-black rounded-3xl overflow-hidden border-4 border-emerald-500 relative shadow-2xl">
+            <div id="remoteScannerVideo" class="w-full h-64 bg-gray-800"></div>
+            <div class="absolute top-4 left-4 bg-black/50 px-3 py-1 rounded-full text-xs font-bold text-white">MOD PENGIMBAS GURU</div>
         </div>
-
-        <div class="flex gap-5">
-            <button onclick="startLcdCountdown()" id="lcdStartBtn" class="px-12 py-5 bg-emerald-600 text-white rounded-2xl font-black text-2xl shadow-2xl hover:scale-105 transition-all">MULA</button>
-            <button onclick="resetLcdCountdown()" class="px-12 py-5 bg-indigo-800 text-indigo-100 rounded-2xl font-black text-2xl">RESET</button>
-        </div>
-        <div class="mt-16 py-4 px-10 bg-indigo-900/50 rounded-full border border-indigo-700">
-            <p id="lcdStudentName" class="text-indigo-200 text-3xl font-black uppercase tracking-widest truncate max-w-full">SEMUA MURID</p>
-        </div>
-        <button onclick="closeLCDMode()" class="absolute top-6 right-6 text-indigo-400 hover:text-white text-6xl font-black transition-colors">×</button>
+        <p class="mt-6 text-gray-400 font-bold text-sm px-6">Imbas kertas murid yang telah siap. Data akan dihantar terus ke skrin LCD.</p>
+        <button onclick="stopRemoteScanner()" class="mt-8 py-4 px-12 bg-red-600 text-white rounded-2xl font-black text-xl shadow-lg active:scale-95 transition-transform">TUTUP</button>
     </div>
 
     <!-- Database & Scanner Modals -->
@@ -273,16 +278,16 @@
                 <h2 class="text-3xl font-black text-pdp-primary">Pengurusan Data</h2>
                 <button onclick="closeStudentManager()" class="text-gray-400 hover:text-red-600 text-4xl font-black">×</button>
             </div>
-            <div class="flex gap-3 mb-6 px-2">
-                <button onclick="exportDatabase()" class="flex-1 py-3 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl font-black text-xs uppercase">Simpan Data</button>
-                <button onclick="triggerImport()" class="flex-1 py-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl font-black text-xs uppercase">Muat Naik Data</button>
+            <div class="flex gap-3 mb-6 px-2 overflow-x-auto">
+                <button onclick="exportDatabase()" class="flex-1 py-3 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl font-black text-xs uppercase whitespace-nowrap px-4">Simpan Data</button>
+                <button onclick="triggerImport()" class="flex-1 py-3 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl font-black text-xs uppercase whitespace-nowrap px-4">Muat Naik Data</button>
                 <input type="file" id="importFile" class="hidden" accept=".json" onchange="importDatabase(this)">
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 overflow-hidden flex-grow px-2">
                 <div class="space-y-6 overflow-y-auto custom-scroll pr-2">
                     <div class="p-6 bg-indigo-50 rounded-3xl border-2 border-indigo-100 space-y-4 shadow-sm">
                         <h3 class="font-black text-indigo-900 text-xs uppercase tracking-widest">Input Pukal</h3>
-                        <textarea id="bulkInput" placeholder="Nama, Kelas" class="w-full h-32 px-5 py-4 rounded-2xl border-2 border-white outline-none font-bold text-sm resize-none"></textarea>
+                        <textarea id="bulkInput" placeholder="Nama, Kelas (Satu per baris)" class="w-full h-32 px-5 py-4 rounded-2xl border-2 border-white outline-none font-bold text-sm resize-none"></textarea>
                         <button onclick="addBulkStudents()" class="w-full py-3.5 bg-indigo-700 text-white rounded-xl font-black text-sm">Simpan Pukal</button>
                     </div>
                     <div id="studentListContainer" class="space-y-2"></div>
@@ -291,17 +296,17 @@
                     <h3 class="font-black text-emerald-700 text-xs uppercase tracking-widest mb-2 text-center">Rekod & Cetak</h3>
                     <div class="bg-emerald-50 p-4 rounded-2xl mb-4 border border-emerald-100 flex gap-3">
                         <select id="printClassSelect" class="flex-1 px-4 py-3 rounded-xl border-2 border-emerald-200 font-bold text-emerald-900 outline-none text-sm bg-white"><option value="all">SEMUA KELAS</option></select>
-                        <button onclick="generateTestByClass()" class="px-6 py-3 bg-emerald-600 text-white rounded-xl font-black">CETAK PDF</button>
+                        <button onclick="generateTestByClass()" class="px-6 py-3 bg-emerald-600 text-white rounded-xl font-black whitespace-nowrap">CETAK PDF</button>
                     </div>
                     <div id="gradebookList" class="flex-grow overflow-y-auto custom-scroll space-y-3 pr-1"></div>
-                    <button onclick="clearAllData()" class="mt-4 text-[10px] text-red-400 font-bold uppercase underline text-center">Padam Semua</button>
+                    <button onclick="clearAllData()" class="mt-4 text-[10px] text-red-400 font-bold uppercase underline text-center">Padam Semua Data</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="scannerModal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden z-50 flex flex-col items-center justify-center p-6 text-center">
-        <h2 class="text-3xl font-black text-white mb-8 uppercase tracking-widest">Imbas Kod Kertas</h2>
+        <h2 class="text-3xl font-black text-white mb-8 uppercase tracking-widest">Imbas Kod</h2>
         <div id="reader" class="rounded-[2rem] overflow-hidden w-full max-w-sm border-4 border-indigo-600 bg-white"></div>
         <button onclick="toggleScanner()" class="mt-10 py-4 px-14 bg-white/10 text-white border border-white/20 rounded-2xl font-black text-lg">Tutup</button>
     </div>
@@ -322,6 +327,7 @@
         </div>
     </div>
 
+    <!-- Print Area -->
     <div id="printArea" class="hidden bg-white"></div>
 
     <script>
@@ -332,133 +338,9 @@
         let peer = null;
         let conn = null;
         let myPeerId = null;
-
-        // Check URL for Remote Mode
-        const urlParams = new URLSearchParams(window.location.search);
-        const remoteTargetId = urlParams.get('remote');
-
-        if(remoteTargetId) {
-            setTimeout(() => startRemoteMode(remoteTargetId), 1000);
-        }
-
-        function openSynergyModal() {
-            document.getElementById('synergyModal').classList.remove('hidden');
-            if(!peer) initPeer();
-        }
-
-        function closeSynergyModal() {
-            document.getElementById('synergyModal').classList.add('hidden');
-        }
-
-        function initPeer() {
-            document.getElementById('synergyLoading').classList.remove('hidden');
-            peer = new Peer();
-            
-            peer.on('open', (id) => {
-                myPeerId = id;
-                document.getElementById('synergyLoading').classList.add('hidden');
-                
-                if (remoteTargetId) {
-                    // Do nothing
-                } else {
-                    document.getElementById('synergyHostView').classList.remove('hidden');
-                    const connUrl = window.location.href.split('?')[0] + '?remote=' + id;
-                    // QR for PeerJS connection
-                    const qrEl = document.getElementById('synergyQr');
-                    // Use QR Code API for Synergy as it needs internet anyway
-                    qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(connUrl)}`;
-                    
-                    peer.on('connection', (c) => {
-                        conn = c;
-                        setupConnection();
-                        alert("Telefon disambungkan!");
-                        closeSynergyModal();
-                        document.getElementById('connStatus').innerText = "SINERGI AKTIF";
-                        document.getElementById('connStatus').classList.replace('bg-gray-200','bg-green-200');
-                        document.getElementById('connStatus').classList.replace('text-gray-600','text-green-700');
-                    });
-                }
-            });
-        }
-
-        function startRemoteMode(targetId) {
-            openSynergyModal();
-            document.getElementById('synergyHostView').classList.add('hidden');
-            document.getElementById('synergyRemoteView').classList.remove('hidden');
-            
-            if(!peer) peer = new Peer();
-            
-            peer.on('open', () => {
-                conn = peer.connect(targetId);
-                setupConnection();
-            });
-        }
-
-        function setupConnection() {
-            conn.on('data', (data) => {
-                if(data.type === 'LEADERBOARD') {
-                    showLeaderboardOnLCD(data.payload);
-                }
-            });
-        }
-
-        function sendLeaderboardToLCD() {
-            if(!conn) return alert("Tiada sambungan ke LCD.");
-            
-            const sortedRecords = [...records]
-                .sort((a,b) => {
-                    if (b.score !== a.score) return b.score - a.score;
-                    return a.time - b.time;
-                })
-                .slice(0, 5);
-
-            conn.send({
-                type: 'LEADERBOARD',
-                payload: sortedRecords
-            });
-            alert("Data dihantar ke LCD!");
-        }
-
-        function showLeaderboardOnLCD(data) {
-            const container = document.getElementById('lcdLeaderboard');
-            const content = document.getElementById('leaderboardContent');
-            container.classList.remove('hidden');
-            content.innerHTML = "";
-
-            if(data.length === 0) {
-                content.innerHTML = "<p class='text-center text-gray-400 font-bold'>Tiada Rekod</p>";
-                return;
-            }
-
-            data.forEach((r, idx) => {
-                const colors = ["bg-yellow-400", "bg-gray-300", "bg-amber-600", "bg-indigo-100", "bg-indigo-50"];
-                const width = Math.max(20, (r.score / 10) * 100);
-                
-                const item = document.createElement('div');
-                item.className = "flex items-center gap-4 animate-fade-up";
-                item.style.animationDelay = `${idx * 0.1}s`;
-                item.innerHTML = `
-                    <div class="w-12 h-12 flex items-center justify-center font-black text-xl rounded-full ${colors[idx] || "bg-gray-100"} text-white shadow-md border-2 border-white shrink-0">
-                        ${idx + 1}
-                    </div>
-                    <div class="flex-grow">
-                        <div class="flex justify-between text-indigo-900 font-black text-lg mb-1">
-                            <span>${r.name}</span>
-                            <span>${r.time}s</span>
-                        </div>
-                        <div class="h-6 w-full bg-gray-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 bar-fill" style="--w: ${width}%"></div>
-                        </div>
-                        <p class="text-xs text-indigo-400 font-bold mt-1 uppercase tracking-wider">${r.kls} • Sifir ${r.sifir} • Skor ${r.score}</p>
-                    </div>
-                `;
-                content.appendChild(item);
-            });
-        }
-
-        function closeLeaderboard() {
-            document.getElementById('lcdLeaderboard').classList.add('hidden');
-        }
+        let raceStartTime = null;
+        let liveLeaderboard = [];
+        let remoteScannerHtml5QrCode = null;
 
         // --- Init State ---
         let currentSifir = null, currentMode = 'learn', lang = 'ms';
@@ -477,36 +359,255 @@
             9: { val: 1, type: 'minus', display: '-1' }
         };
 
-        // --- Database & Import/Export ---
-        function exportDatabase() {
-            const data = { students, records, timestamp: new Date().toISOString() };
-            const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = "circulox_backup_" + new Date().toISOString().slice(0,10) + ".json";
-            document.body.appendChild(a); a.click(); a.remove();
-        }
-        function triggerImport() { document.getElementById('importFile').click(); }
-        function importDatabase(input) {
-            const file = input.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (data.students) {
-                        if (confirm("Gantikan data semasa dengan backup?")) {
-                            students = data.students; records = data.records || [];
-                            localStorage.setItem('krd_students_v3', JSON.stringify(students));
-                            localStorage.setItem('krd_records_v3', JSON.stringify(records));
-                            updateClassDropdown(); renderStudentList(); renderGradebook();
-                            alert("Data dipulihkan!");
+        // --- PeerJS / LCD Host Logic ---
+        function openLCDMode() {
+            document.getElementById('lcdModal').classList.remove('hidden');
+            document.getElementById('lcdTimerDisplay').innerText = "10:00";
+            
+            // Init Peer for Host
+            if(!peer) {
+                peer = new Peer();
+                peer.on('open', (id) => {
+                    myPeerId = id;
+                    document.getElementById('peerIdDisplay').innerText = `ID: ${id}`;
+                    generateHostQR(id);
+                });
+                peer.on('connection', (c) => {
+                    c.on('data', (data) => {
+                        if(data.type === 'SCAN_ENTRY') {
+                            handleRaceEntry(data.payload);
                         }
-                    }
-                } catch (err) { alert("Ralat fail."); }
-                input.value = '';
-            }; reader.readAsText(file);
+                    });
+                });
+            } else {
+                generateHostQR(myPeerId);
+            }
+            
+            // Populate class filter in LCD
+            const classFilter = document.getElementById('lcdClassFilter');
+            const unique = [...new Set(students.map(s => s.kls))].sort();
+            classFilter.innerHTML = '<option value="all">SEMUA</option>' + unique.map(c => `<option value="${c}">${c}</option>`).join('');
         }
 
-        // --- Main Logic (Similar to previous, compacted) ---
+        function generateHostQR(id) {
+            const container = document.getElementById('hostQrContainer');
+            container.innerHTML = "";
+            const joinData = JSON.stringify({ type: "CONNECT_REMOTE", hostId: id });
+            new QRCode(container, {
+                text: joinData,
+                width: 80,
+                height: 80
+            });
+        }
+
+        function handleRaceEntry(payload) {
+            // Calculate time taken based on countdown
+            const totalTime = parseInt(document.getElementById('lcdTimeSelect').value) === 0 ? 600 : parseInt(document.getElementById('lcdTimeSelect').value);
+            // If custom time used
+            const selectedTime = document.getElementById('lcdTimeSelect').value;
+            let initialTime = selectedTime === 'custom' ? (document.getElementById('lcdCustomTime').value * 60) : parseInt(selectedTime);
+            
+            // Current Time (Elapsed)
+            const elapsed = initialTime - lcdTimeLeft;
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            const timeString = `${minutes}m ${seconds}s`;
+            
+            // Check if student already in leaderboard to prevent duplicates
+            const exists = liveLeaderboard.find(r => r.name === payload.name && r.kls === payload.kls);
+            if(exists) return; // Ignore duplicate scans
+
+            liveLeaderboard.push({
+                name: payload.name,
+                kls: payload.kls,
+                timeStr: timeString,
+                timestamp: elapsed
+            });
+            
+            updateLCDLeaderboardUI();
+        }
+
+        function updateLCDLeaderboardUI() {
+            const list = document.getElementById('lcdLeaderboardList');
+            const filter = document.getElementById('lcdClassFilter').value;
+            let displayData = liveLeaderboard;
+            
+            if(filter !== 'all') {
+                displayData = liveLeaderboard.filter(r => r.kls === filter);
+            }
+            
+            // Sort by fastest time
+            displayData.sort((a,b) => a.timestamp - b.timestamp);
+            
+            list.innerHTML = "";
+            document.getElementById('leaderboardCount').innerText = displayData.length;
+            
+            displayData.forEach((r, idx) => {
+                const el = document.createElement('div');
+                el.className = "leaderboard-item show bg-white/10 p-3 rounded-xl flex justify-between items-center text-white";
+                el.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-white text-indigo-900 font-black flex items-center justify-center">${idx + 1}</div>
+                        <div>
+                            <p class="font-bold leading-tight">${r.name}</p>
+                            <p class="text-[10px] opacity-70">${r.kls}</p>
+                        </div>
+                    </div>
+                    <p class="font-mono font-bold text-emerald-400 text-xl">${r.timeStr}</p>
+                `;
+                list.appendChild(el);
+            });
+        }
+
+        function filterLeaderboard() {
+            updateLCDLeaderboardUI();
+        }
+
+        function closeLCDMode() {
+            document.getElementById('lcdModal').classList.add('hidden');
+            resetLcdCountdown();
+        }
+
+        // --- Remote Scanner (Teacher Phone) Logic ---
+        function startRemoteScanner(hostId) {
+            document.getElementById('remoteScannerModal').classList.remove('hidden');
+            
+            // Connect to host
+            if(!peer) peer = new Peer();
+            peer.on('open', () => {
+                conn = peer.connect(hostId);
+                conn.on('open', () => {
+                    // Connection established, start camera
+                    startHtml5RemoteScanner();
+                });
+            });
+        }
+
+        function startHtml5RemoteScanner() {
+            remoteScannerHtml5QrCode = new Html5Qrcode("remoteScannerVideo");
+            remoteScannerHtml5QrCode.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: 250 }, 
+                (decodedText) => {
+                    // Handle scanned student QR
+                    if(decodedText.startsWith("LOGIN:")) {
+                        const parts = decodedText.replace("LOGIN:", "").split("|");
+                        const studentName = parts[0];
+                        const studentClass = parts[1];
+                        
+                        if(conn && conn.open) {
+                            conn.send({
+                                type: 'SCAN_ENTRY',
+                                payload: { name: studentName, kls: studentClass }
+                            });
+                            
+                            // Visual feedback on phone
+                            // Ideally, pause scanning briefly
+                            remoteScannerHtml5QrCode.pause();
+                            alert(`Data ${studentName} dihantar!`);
+                            remoteScannerHtml5QrCode.resume();
+                        } else {
+                            alert("Terputus sambungan dengan LCD.");
+                        }
+                    }
+                }
+            ).catch(err => {
+                console.log(err);
+                alert("Ralat kamera remote.");
+            });
+        }
+
+        function stopRemoteScanner() {
+            if(remoteScannerHtml5QrCode) {
+                remoteScannerHtml5QrCode.stop().then(() => {
+                    document.getElementById('remoteScannerModal').classList.add('hidden');
+                    remoteScannerHtml5QrCode = null;
+                });
+            } else {
+                document.getElementById('remoteScannerModal').classList.add('hidden');
+            }
+        }
+
+        // --- Scanner Logic (Main) ---
+        function toggleScanner() { 
+            const m = document.getElementById('scannerModal'); 
+            if(!m.classList.contains('hidden')) { if(html5QrCode) html5QrCode.stop(); m.classList.add('hidden'); }
+            else { 
+                m.classList.remove('hidden'); html5QrCode = new Html5Qrcode("reader"); 
+                html5QrCode.start({facingMode:"environment"}, {fps:10,qrbox:250}, (t)=>{ 
+                    try {
+                        // Check if it's a Remote Connect QR
+                        if(t.includes("CONNECT_REMOTE")) {
+                            const data = JSON.parse(t);
+                            toggleScanner(); // Close main scanner
+                            startRemoteScanner(data.hostId);
+                            return;
+                        }
+                        // Check if it's Login QR
+                        if(t.startsWith("LOGIN:")) { 
+                            const p = t.replace("LOGIN:","").split("|"); 
+                            activeStudent={name:p[0],kls:p[1]}; 
+                            toggleScanner(); 
+                            updateStudentUI();
+                            return;
+                        }
+                    } catch(e) { console.log(e); }
+                }); 
+            }
+        }
+
+        // --- LCD Timer Logic ---
+        function startLcdCountdown() {
+            if(lcdCountdownInterval) { clearInterval(lcdCountdownInterval); lcdCountdownInterval = null; document.getElementById('lcdStartBtn').innerText = "SAMBUNG"; return; }
+            
+            const select = document.getElementById('lcdTimeSelect');
+            if (select.value === 'custom') {
+                const val = document.getElementById('lcdCustomTime').value;
+                if(!val) return alert("Masukkan masa.");
+                if(lcdTimeLeft === 600 || lcdTimeLeft === 0) lcdTimeLeft = val * 60;
+            } else {
+                if(lcdTimeLeft === 600 || lcdTimeLeft === 0) lcdTimeLeft = parseInt(select.value);
+            }
+
+            document.getElementById('lcdStartBtn').innerText = "BERHENTI";
+            lcdCountdownInterval = setInterval(() => { 
+                lcdTimeLeft--; 
+                updateLcdDisplay(); 
+                if(lcdTimeLeft <= 0) { 
+                    clearInterval(lcdCountdownInterval); 
+                    lcdCountdownInterval = null; 
+                    alert("MASA TAMAT!"); 
+                    resetLcdCountdown(); 
+                } 
+            }, 1000);
+        }
+
+        function resetLcdCountdown() { 
+            clearInterval(lcdCountdownInterval); lcdCountdownInterval = null; lcdTimeLeft = 600; 
+            document.getElementById('lcdTimerDisplay').innerText = "10:00"; 
+            document.getElementById('lcdStartBtn').innerText = "MULA";
+            liveLeaderboard = [];
+            updateLCDLeaderboardUI();
+        }
+
+        function updateLcdDisplay() { 
+            const m = Math.floor(lcdTimeLeft/60).toString().padStart(2, '0');
+            const s = (lcdTimeLeft%60).toString().padStart(2, '0'); 
+            document.getElementById('lcdTimerDisplay').innerText = `${m}:${s}`; 
+        }
+
+        document.getElementById('lcdTimeSelect').addEventListener('change', function() {
+            const cust = document.getElementById('lcdCustomTime');
+            if(this.value === 'custom') {
+                cust.classList.remove('hidden');
+            } else {
+                cust.classList.add('hidden');
+                lcdTimeLeft = parseInt(this.value);
+                updateLcdDisplay();
+            }
+        });
+
+        // --- Main App Logic (Existing) ---
         function updateClassDropdown() {
             const drop = document.getElementById('classDropdown'), printDrop = document.getElementById('printClassSelect');
             const unique = [...new Set(students.map(s => s.kls))].sort();
@@ -529,6 +630,13 @@
             const d = document.getElementById('studentDetail'), p = document.getElementById('noStudentText'), i = document.getElementById('activeStudentInfo');
             if(activeStudent) { d.classList.remove('hidden'); p.classList.add('hidden'); i.classList.remove('hidden'); document.getElementById('dispName').innerText = activeStudent.name; document.getElementById('dispClass').innerText = activeStudent.kls; }
             else { d.classList.add('hidden'); p.classList.remove('hidden'); i.classList.add('hidden'); }
+        }
+        function addStudent() {
+            const n = document.getElementById('addName').value.trim(), k = document.getElementById('addClass').value.trim().toUpperCase();
+            if(!n || !k) return;
+            students.push({ name: n, kls: k }); localStorage.setItem('krd_students_v3', JSON.stringify(students));
+            document.getElementById('addName').value = ''; document.getElementById('addClass').value = '';
+            updateClassDropdown(); renderStudentList();
         }
         function addBulkStudents() {
             const raw = document.getElementById('bulkInput').value; if(!raw) return;
@@ -612,94 +720,14 @@
         function startTimer() { if(!timerInterval) { const s = Date.now(); timerInterval = setInterval(() => { const t = Math.floor((Date.now()-s)/1000); document.getElementById('timerDisplay').innerText = t; }, 1000); } }
         function resetTimer() { clearInterval(timerInterval); timerInterval=null; if(document.getElementById('timerDisplay')) document.getElementById('timerDisplay').innerText="00:00"; }
         function resetApp() { currentSifir=null; score={correct:0,total:0}; resetTimer(); if(document.getElementById('wheelWrapper')) document.getElementById('wheelWrapper').innerHTML = `<span class="text-gray-300 font-black">Pilih Sifir</span>`; }
-        function openLCDMode() { 
-            document.getElementById('lcdModal').classList.remove('hidden'); 
-            resetLcdCountdown(); 
-        }
-        function closeLCDMode() { document.getElementById('lcdModal').classList.add('hidden'); }
-        function startLcdCountdown() { 
-            if(lcdCountdownInterval) return; 
-            
-            // Handle Custom Time
-            const select = document.getElementById('lcdTimeSelect');
-            if (select.value === 'custom') {
-                const customVal = document.getElementById('lcdCustomTime').value;
-                if (!customVal || customVal <= 0) return alert("Sila masukkan masa yang sah.");
-                lcdTimeLeft = customVal * 60;
-            } else if (lcdTimeLeft <= 0 || lcdTimeLeft === 600) {
-                // If reset or default, update based on dropdown
-                lcdTimeLeft = parseInt(select.value);
-            }
-
-            document.getElementById('lcdStartBtn').innerText = "BERHENTI";
-            document.getElementById('lcdStartBtn').onclick = pauseLcdCountdown;
-
-            lcdCountdownInterval = setInterval(() => { 
-                lcdTimeLeft--; 
-                
-                const m = Math.floor(lcdTimeLeft / 60).toString().padStart(2, '0');
-                const s = (lcdTimeLeft % 60).toString().padStart(2, '0');
-                document.getElementById('lcdTimerDisplay').innerText = `${m}:${s}`;
-                
-                if(lcdTimeLeft<=0) {
-                    clearInterval(lcdCountdownInterval);
-                    lcdCountdownInterval = null;
-                    alert("MASA TAMAT!");
-                    resetLcdCountdown();
-                }
-            }, 1000); 
-        }
         
-        function pauseLcdCountdown() {
-            clearInterval(lcdCountdownInterval);
-            lcdCountdownInterval = null;
-            document.getElementById('lcdStartBtn').innerText = "SAMBUNG";
-            document.getElementById('lcdStartBtn').onclick = startLcdCountdown;
-        }
-
-        function resetLcdCountdown() { 
-            clearInterval(lcdCountdownInterval); 
-            lcdCountdownInterval=null; 
-            
-            const select = document.getElementById('lcdTimeSelect');
-            if(select.value === 'custom') {
-                 // reset to 0 or keep input? Let's reset display to input
-                 const val = document.getElementById('lcdCustomTime').value || 10;
-                 lcdTimeLeft = val * 60;
-                 const m = Math.floor(lcdTimeLeft / 60).toString().padStart(2, '0');
-                 document.getElementById('lcdTimerDisplay').innerText = `${m}:00`;
-            } else {
-                lcdTimeLeft = parseInt(select.value);
-                const m = Math.floor(lcdTimeLeft / 60).toString().padStart(2, '0');
-                document.getElementById('lcdTimerDisplay').innerText = `${m}:00`;
-            }
-            
-            document.getElementById('lcdStartBtn').innerText = "MULA";
-            document.getElementById('lcdStartBtn').onclick = startLcdCountdown;
-        }
-
-        // Toggle custom time input
-        document.getElementById('lcdTimeSelect').addEventListener('change', function() {
-            const customInput = document.getElementById('lcdCustomTime');
-            if (this.value === 'custom') {
-                customInput.classList.remove('hidden');
-            } else {
-                customInput.classList.add('hidden');
-                lcdTimeLeft = parseInt(this.value);
-                const m = Math.floor(lcdTimeLeft / 60).toString().padStart(2, '0');
-                document.getElementById('lcdTimerDisplay').innerText = `${m}:00`;
-            }
-        });
-
         function openStudentManager() { document.getElementById('studentModal').classList.remove('hidden'); renderStudentList(); renderGradebook(); }
         function closeStudentManager() { document.getElementById('studentModal').classList.add('hidden'); }
-        function toggleScanner() { 
-            const m = document.getElementById('scannerModal'); 
-            if(!m.classList.contains('hidden')) { if(html5QrCode) html5QrCode.stop(); m.classList.add('hidden'); }
-            else { m.classList.remove('hidden'); html5QrCode = new Html5Qrcode("reader"); html5QrCode.start({facingMode:"environment"}, {fps:10,qrbox:250}, (t)=>{ 
-                if(t.startsWith("LOGIN:")) { const p = t.replace("LOGIN:","").split("|"); activeStudent={name:p[0],kls:p[1]}; toggleScanner(); updateStudentUI(); }
-            }); }
-        }
+        
+        function openEntryModal() { document.getElementById('entryModal').classList.remove('hidden'); if(activeStudent) document.getElementById('entryStudentInfo').innerText = `${activeStudent.name} (${activeStudent.kls})`; const g = document.getElementById('entrySifirGrid'); g.innerHTML=""; for(let i=1; i<=9; i++) { const b = document.createElement('button'); b.className = `p-2 rounded font-black border ${scanTargetSifir==i?'bg-indigo-600 text-white':'bg-white text-gray-600'}`; b.innerText=i; b.onclick=()=>{scanTargetSifir=i;openEntryModal();}; g.appendChild(b); } }
+        function closeEntryModal() { document.getElementById('entryModal').classList.add('hidden'); }
+        function saveEntry() { const sc=document.getElementById('entryScore').value; const tm=document.getElementById('entryTime').value; if(!sc||!tm) return; records.push({name:activeStudent.name,kls:activeStudent.kls,sifir:scanTargetSifir,score:sc,time:tm,date:new Date().toLocaleDateString()}); localStorage.setItem('krd_records_v3', JSON.stringify(records)); updateStudentUI(); renderGradebook(); closeEntryModal(); }
+
         function generateTestByClass() {
             const cls = document.getElementById('printClassSelect').value;
             const target = cls === 'all' ? students : students.filter(s => s.kls === cls);
@@ -708,82 +736,88 @@
             const p = document.getElementById('printArea'); 
             p.innerHTML = '';
             
-            // Wait for DOM updates then print
-            // We need to render QR codes one by one
-            
-            let htmlContent = '';
-            
             target.forEach((s, index) => {
-                // Generate unique ID for QR container
                 const qrId = `qrcode-${index}`;
+                // Use a single A4 container
+                const d = document.createElement('div');
+                d.className = 'page-break bg-white p-8';
                 
-                htmlContent += `
-                <div class="page-break p-10 border-4 border-gray-200 m-4 rounded-3xl">
-                    <div class="flex justify-between items-start border-b-4 border-black pb-6 mb-8">
+                let content = `
+                <div class="border-4 border-gray-800 p-6 rounded-3xl h-full flex flex-col relative">
+                    <div class="flex justify-between items-start border-b-4 border-black pb-4 mb-4">
                         <div>
-                            <h1 class="text-5xl font-black mb-2 tracking-tighter">CIRCULOX</h1>
-                            <p class="text-2xl font-bold uppercase">${s.name}</p>
-                            <p class="text-xl text-gray-600 font-bold uppercase">${s.kls}</p>
+                            <h1 class="text-4xl font-black mb-1 uppercase tracking-tighter">CIRCULOX</h1>
+                            <p class="text-xl font-bold uppercase">${s.name}</p>
+                            <p class="text-lg font-bold uppercase text-gray-600">${s.kls}</p>
                         </div>
                         <div class="flex flex-col items-center">
-                            <div id="${qrId}" class="border-4 border-black p-2 bg-white"></div>
-                            <p class="text-xs font-bold mt-1">SCAN UNTUK REKOD</p>
+                            <div id="${qrId}" class="bg-white p-1 border-2 border-black"></div>
+                            <p class="text-[10px] font-black mt-1 uppercase">Imbas Untuk Mula</p>
                         </div>
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-8">
+                    <div class="grid grid-cols-2 gap-4 flex-grow">
                 `;
                 
-                // Add Sifir 2-9 grids
+                // Add Sifir 2-9
                 for(let i=2; i<=9; i++) {
-                    const wheelHtml = `
-                    <div class="flex flex-col items-center border-2 border-gray-300 rounded-3xl p-4">
-                        <div class="relative w-40 h-40">
-                            <svg viewBox="0 0 400 400" class="w-full h-full">
-                                <!-- Paths for wheel -->
-                                ${Array.from({length:10}, (_, j) => {
-                                    const a = j*36-90, rad = ((a+18)*Math.PI)/180;
-                                    return `<path d="${createArcPath(200,200,85,175,a,a+36)}" fill="none" stroke="black" stroke-width="4" />
-                                            <text x="${200+Math.cos(rad)*65}" y="${200+Math.sin(rad)*65}" text-anchor="middle" font-size="24" font-weight="900" alignment-baseline="middle">${j+1}</text>
-                                            <text x="${200+Math.cos(rad)*112}" y="${200+Math.sin(rad)*115}" text-anchor="middle" font-size="20" fill="#ccc">____</text>`;
-                                }).join('')}
-                                <circle cx="200" cy="200" r="40" fill="none" stroke="black" stroke-width="4" />
-                                <text x="200" y="208" text-anchor="middle" font-size="30" font-weight="900">${i}×</text>
-                            </svg>
-                        </div>
-                        <p class="font-black text-xl mt-2">SIFIR ${i}</p>
+                    content += `
+                    <div class="border-2 border-gray-400 rounded-2xl p-2 flex flex-col items-center justify-center relative">
+                        <p class="absolute top-1 left-2 font-black text-lg text-gray-300">x${i}</p>
+                        <svg viewBox="0 0 400 400" class="w-32 h-32">
+                            ${Array.from({length:10}, (_, j) => {
+                                const a = j*36-90, rad = ((a+18)*Math.PI)/180;
+                                return `<path d="${createArcPath(200,200,90,180,a,a+36)}" fill="none" stroke="black" stroke-width="6" />
+                                        <text x="${200+Math.cos(rad)*65}" y="${200+Math.sin(rad)*65}" text-anchor="middle" font-size="28" font-weight="900" alignment-baseline="middle">${j+1}</text>
+                                        <text x="${200+Math.cos(rad)*112}" y="${200+Math.sin(rad)*115}" text-anchor="middle" font-size="24" fill="#ccc">__</text>`;
+                            }).join('')}
+                            <circle cx="200" cy="200" r="45" fill="none" stroke="black" stroke-width="6" />
+                        </svg>
                     </div>`;
-                    htmlContent += wheelHtml;
                 }
                 
-                htmlContent += `
+                content += `
                     </div>
-                    <div class="mt-8 pt-4 border-t-4 border-black flex justify-between font-black text-xl">
-                        <p>TARIKH: ____________</p>
+                    <div class="mt-4 pt-2 border-t-4 border-black flex justify-between font-black text-lg">
                         <p>SKOR: _____ / 80</p>
                         <p>MASA: _________</p>
                     </div>
                 </div>`;
+                
+                d.innerHTML = content;
+                p.appendChild(d);
             });
             
-            p.innerHTML = htmlContent;
-            
-            // Generate QRs after HTML insertion
+            // Generate QR Codes with qrcode.js
             setTimeout(() => {
                 target.forEach((s, index) => {
-                    const qrContainer = document.getElementById(`qrcode-${index}`);
-                    if(qrContainer) {
-                        new QRCode(qrContainer, {
+                    const el = document.getElementById(`qrcode-${index}`);
+                    if(el) {
+                        new QRCode(el, {
                             text: `LOGIN:${s.name}|${s.kls}`,
-                            width: 100,
-                            height: 100
+                            width: 80,
+                            height: 80,
+                            correctLevel: QRCode.CorrectLevel.L
                         });
                     }
                 });
-                
-                // Small delay for QR rendering before print
-                setTimeout(() => window.print(), 500);
+                // Delay print to ensure images render
+                setTimeout(() => window.print(), 800);
             }, 100);
+        }
+
+        // Database
+        function exportDatabase() {
+            const data = { students, records, timestamp: new Date().toISOString() };
+            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));
+            a.download = "circulox_db.json"; document.body.appendChild(a); a.click(); a.remove();
+        }
+        function triggerImport() { document.getElementById('importFile').click(); }
+        function importDatabase(input) {
+            const f = input.files[0]; if(!f) return;
+            const r = new FileReader(); r.onload=e=>{
+                try { const d=JSON.parse(e.target.result); if(d.students){ students=d.students; records=d.records||[]; localStorage.setItem('krd_students_v3',JSON.stringify(students)); localStorage.setItem('krd_records_v3',JSON.stringify(records)); updateClassDropdown(); renderStudentList(); renderGradebook(); alert("Berjaya."); } } catch(e){alert("Ralat fail.");}
+            }; r.readAsText(f);
         }
 
         // Init
