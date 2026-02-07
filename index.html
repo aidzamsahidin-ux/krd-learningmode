@@ -16,7 +16,6 @@
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Confetti untuk Keraian -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -63,8 +62,9 @@
         }
 
         .step-box {
-            border-left: 6px solid var(--accent); background: #ffffff; padding: 1rem;
-            border-radius: 1rem; margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-left: 8px solid var(--accent); background: #ffffff; padding: 1.25rem;
+            border-radius: 1.25rem; margin-bottom: 1.25rem; box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            animation: fadeInUp 0.4s ease-out;
         }
 
         .wheel-label, .ans-label { pointer-events: none; font-weight: 800; }
@@ -90,26 +90,25 @@
         .leaderboard-item { transition: all 0.5s ease-out; transform: translateY(20px); opacity: 0; }
         .leaderboard-item.show { transform: translateY(0); opacity: 1; }
 
-        /* Podium Animations */
-        @keyframes podium-rise {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+        @keyframes podium-rise { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .podium-bar { animation: podium-rise 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
         .podium-1 { animation-delay: 0.5s; }
         .podium-2 { animation-delay: 0.2s; }
         .podium-3 { animation-delay: 0.8s; }
 
-        /* Toast Notification */
+        /* Smooth Toast Notification */
         #toast-notification {
-            transition: all 0.3s ease-in-out;
-            transform: translateY(100%);
-            opacity: 0;
+            position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
+            background-color: #10b981; color: white; padding: 0.75rem 1.5rem;
+            border-radius: 9999px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            display: flex; align-items: center; gap: 0.75rem; z-index: 200;
+            opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            white-space: nowrap;
         }
-        #toast-notification.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
+        #toast-notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-up { animation: fadeInUp 0.5s ease-out forwards; }
     </style>
 </head>
 <body class="flex flex-col text-sm md:text-base">
@@ -228,7 +227,7 @@
         </aside>
     </main>
 
-    <!-- Synergy Modal (NEW CODE BASED) -->
+    <!-- Synergy Modal -->
     <div id="synergyModal" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden z-[150] flex flex-col items-center justify-center p-6 text-center">
         <div class="glass-card w-full max-w-md p-8 rounded-[3rem] animate-fade-up border-t-[15px] border-blue-600 relative">
             <button onclick="closeSynergyModal()" class="absolute top-4 right-6 text-gray-400 hover:text-red-500 text-3xl font-black">×</button>
@@ -240,7 +239,6 @@
                 <button onclick="switchSynergyTab('client')" id="tabClient" class="flex-1 py-2 rounded-lg font-bold text-sm text-gray-500 hover:text-indigo-900">Saya Telefon</button>
             </div>
 
-            <!-- Host View (LCD) -->
             <div id="synergyHostView" class="space-y-6">
                 <div class="p-6 bg-indigo-50 border-4 border-indigo-100 rounded-3xl inline-block">
                     <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">KOD SESI ANDA</p>
@@ -250,7 +248,6 @@
                 <p class="text-xs font-bold text-gray-400">Masukkan kod ini pada telefon untuk menyambung.</p>
             </div>
 
-            <!-- Client View (Phone) -->
             <div id="synergyClientView" class="hidden space-y-4">
                 <input type="text" id="sessionCodeInput" placeholder="Masukkan Kod 5-Digit" maxlength="5" class="w-full px-6 py-4 rounded-2xl border-2 border-indigo-100 text-center font-black text-2xl uppercase outline-none focus:border-indigo-500">
                 <button onclick="joinSynergySession()" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-black text-xl shadow-xl hover:bg-blue-700 transition-all">SAMBUNG</button>
@@ -266,7 +263,6 @@
     <div id="lcdModal" class="fixed inset-0 bg-indigo-950 hidden z-[100] flex flex-col p-6 text-center">
         <!-- Header Section (Top Bar) -->
         <div class="flex justify-between items-start w-full mb-4 shrink-0">
-            <!-- Connection Status -->
             <div class="text-left bg-indigo-900/50 p-4 rounded-2xl backdrop-blur-sm border border-indigo-700 flex items-center gap-4 cursor-pointer hover:bg-indigo-800/50 transition-colors" onclick="openSynergyModal()">
                 <div class="bg-white/10 p-2 rounded-lg w-12 h-12 flex items-center justify-center text-2xl">📡</div>
                 <div>
@@ -275,7 +271,6 @@
                 </div>
             </div>
             
-            <!-- Controls -->
             <div class="flex flex-col items-end gap-2">
                 <button onclick="closeLCDMode()" class="text-indigo-400 hover:text-white text-4xl font-black transition-colors">×</button>
                 <div class="flex items-center gap-2">
@@ -322,9 +317,7 @@
                 </div>
                 <div class="w-full max-w-4xl mt-8 px-4">
                      <h3 class="text-white text-xl font-bold uppercase tracking-widest border-b border-white/20 pb-2 mb-4 text-center">Senarai Seterusnya</h3>
-                     <div id="restOfLeaderboard" class="grid grid-cols-2 gap-4 text-left text-indigo-200 font-bold">
-                        <!-- 4th onwards injected here -->
-                     </div>
+                     <div id="restOfLeaderboard" class="grid grid-cols-2 gap-4 text-left text-indigo-200 font-bold"></div>
                 </div>
                 <button onclick="hidePodium()" class="mt-8 px-8 py-3 bg-white/10 hover:bg-white/20 text-white rounded-full font-bold">Kembali</button>
             </div>
@@ -333,7 +326,6 @@
             <div id="timerSection" class="flex flex-col items-center justify-center w-full max-w-4xl shrink-0 transition-all duration-500">
                 <h2 class="text-indigo-300 text-2xl md:text-4xl font-black uppercase tracking-[0.3em] mb-2 opacity-80 animate-pulse">Masa Berjalan</h2>
                 <div class="lcd-timer font-mono leading-none" id="lcdTimerDisplay">10:00</div>
-                
                 <div class="mt-6 flex items-center gap-4 bg-indigo-900/40 p-2 rounded-2xl backdrop-blur-sm">
                     <select id="lcdTimeSelect" class="bg-transparent text-white text-xl font-black outline-none cursor-pointer px-4 py-2 border-r border-indigo-700">
                         <option value="300" class="bg-indigo-900">5 Minit</option>
@@ -342,7 +334,6 @@
                         <option value="custom" class="bg-indigo-900">Custom...</option>
                     </select>
                     <input type="number" id="lcdCustomTime" class="w-20 bg-white/10 text-white font-black text-center rounded-lg px-2 py-1 outline-none hidden border border-white/20" placeholder="Min">
-                    
                     <div class="flex gap-2">
                         <button onclick="startLcdCountdown()" id="lcdStartBtn" class="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-lg transition-all shadow-lg active:scale-95">MULA</button>
                         <button onclick="finishRace()" class="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-black text-lg transition-all shadow-lg active:scale-95">TAMAT</button>
@@ -358,36 +349,46 @@
                         🏆 Ranking Terpantas <span id="leaderboardCount" class="bg-indigo-600 px-2 py-0.5 rounded text-xs">0</span>
                     </h3>
                 </div>
-                <!-- Scrollable List -->
                 <div id="lcdLeaderboardList" class="flex-grow overflow-y-auto space-y-2 pr-2 custom-scroll">
                     <p class="text-indigo-400/50 font-bold text-center mt-10 uppercase tracking-widest text-sm">Menunggu data dari telefon guru...</p>
                 </div>
             </div>
-
         </div>
     </div>
 
-    <!-- Remote Scanner Mode (Teacher Phone View) -->
-    <div id="remoteScannerModal" class="fixed inset-0 bg-gray-900 hidden z-[120] flex flex-col items-center justify-center p-6 text-center">
-        <h2 class="text-2xl font-black text-white mb-4 uppercase tracking-widest text-emerald-400 animate-pulse">• LIVE CONNECTION •</h2>
-        <div class="w-full max-w-sm bg-black rounded-3xl overflow-hidden border-4 border-emerald-500 relative shadow-2xl">
-            <div id="remoteScannerVideo" class="w-full h-64 bg-gray-800"></div>
-            <div class="absolute top-4 left-4 bg-black/50 px-3 py-1 rounded-full text-xs font-bold text-white">MOD PENGIMBAS GURU</div>
-        </div>
-        <p class="mt-6 text-gray-400 font-bold text-sm px-6">Imbas kertas murid yang telah siap. Data akan dihantar terus ke skrin LCD.</p>
-        <button onclick="stopRemoteScanner()" class="mt-8 py-4 px-12 bg-red-600 text-white rounded-2xl font-black text-xl shadow-lg active:scale-95 transition-transform">TUTUP</button>
-        
-        <!-- Toast Notification (Hidden by default) -->
-        <div id="toast-notification" class="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 opacity-0 transition-all duration-300 pointer-events-none">
-            <span class="text-xl">✅</span>
+    <!-- Scanner Modal (Main) -->
+    <div id="scannerModal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden z-50 flex flex-col items-center justify-center p-6 text-center">
+        <h2 class="text-3xl font-black text-white mb-8 uppercase tracking-widest">Imbas Kod</h2>
+        <div id="reader" class="rounded-[2rem] overflow-hidden w-full max-w-sm border-4 border-indigo-600 bg-white"></div>
+        <button onclick="toggleScanner()" class="mt-10 py-4 px-14 bg-white/10 text-white border border-white/20 rounded-2xl font-black text-lg">Tutup</button>
+        <!-- Toast Notification (Fixed Position) -->
+        <div id="toast-notification" class="pointer-events-none">
+            <span class="text-2xl">✅</span>
             <div>
-                <p class="font-black text-sm" id="toast-name">DATA DIHANTAR</p>
-                <p class="text-[10px] font-bold opacity-80">Direkod ke LCD</p>
+                <p class="font-black text-sm" id="toast-name">BERJAYA!</p>
+                <p class="text-[10px] font-bold opacity-80" id="toast-desc">Data dihantar</p>
             </div>
         </div>
     </div>
 
-    <!-- Database & Scanner Modals -->
+    <!-- Entry Modal (Manual) -->
+    <div id="entryModal" class="fixed inset-0 bg-black/70 hidden z-[60] flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-md p-8 rounded-[3rem] animate-fade-up border-indigo-700 border-t-[15px] text-center shadow-2xl">
+            <h2 class="text-2xl font-black text-indigo-900 mb-2">Rekod Markah</h2>
+            <p id="entryStudentInfo" class="text-indigo-500 font-bold mb-8 text-sm uppercase tracking-wider"></p>
+            <div class="space-y-8">
+                <div><label class="block text-[10px] font-black text-gray-400 uppercase mb-4 text-left pl-1">Sifir</label><div class="grid grid-cols-5 gap-2" id="entrySifirGrid"></div></div>
+                <div class="grid grid-cols-2 gap-6">
+                    <div><label class="block text-[10px] font-black text-gray-400 uppercase mb-3 text-left pl-1">Betul</label><input type="number" id="entryScore" min="0" max="10" class="w-full px-5 py-4 rounded-2xl border-2 border-indigo-50 bg-indigo-50 font-black text-4xl text-center outline-none"></div>
+                    <div><label class="block text-[10px] font-black text-gray-400 uppercase mb-3 text-left pl-1">Masa</label><input type="number" id="entryTime" placeholder="45" class="w-full px-5 py-4 rounded-2xl border-2 border-indigo-50 bg-indigo-50 font-black text-4xl text-center outline-none"></div>
+                </div>
+                <button onclick="saveEntry()" class="w-full py-5 bg-indigo-700 text-white rounded-2xl font-black text-xl">Simpan</button>
+                <button onclick="closeEntryModal()" class="w-full py-2 text-gray-400 font-bold uppercase text-[10px]">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database Modal -->
     <div id="studentModal" class="fixed inset-0 bg-black/90 backdrop-blur-xl hidden z-50 flex flex-col items-center justify-center p-4">
         <div class="glass-card w-full max-w-6xl p-6 md:p-8 rounded-[3rem] max-h-[95vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center mb-4 px-2">
@@ -421,28 +422,6 @@
         </div>
     </div>
 
-    <div id="scannerModal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden z-50 flex flex-col items-center justify-center p-6 text-center">
-        <h2 class="text-3xl font-black text-white mb-8 uppercase tracking-widest">Imbas Kod</h2>
-        <div id="reader" class="rounded-[2rem] overflow-hidden w-full max-w-sm border-4 border-indigo-600 bg-white"></div>
-        <button onclick="toggleScanner()" class="mt-10 py-4 px-14 bg-white/10 text-white border border-white/20 rounded-2xl font-black text-lg">Tutup</button>
-    </div>
-
-    <div id="entryModal" class="fixed inset-0 bg-black/70 hidden z-[60] flex items-center justify-center p-4">
-        <div class="glass-card w-full max-w-md p-8 rounded-[3rem] animate-fade-up border-indigo-700 border-t-[15px] text-center shadow-2xl">
-            <h2 class="text-2xl font-black text-indigo-900 mb-2">Rekod Markah</h2>
-            <p id="entryStudentInfo" class="text-indigo-500 font-bold mb-8 text-sm uppercase tracking-wider"></p>
-            <div class="space-y-8">
-                <div><label class="block text-[10px] font-black text-gray-400 uppercase mb-4 text-left pl-1">Sifir</label><div class="grid grid-cols-5 gap-2" id="entrySifirGrid"></div></div>
-                <div class="grid grid-cols-2 gap-6">
-                    <div><label class="block text-[10px] font-black text-gray-400 uppercase mb-3 text-left pl-1">Betul</label><input type="number" id="entryScore" min="0" max="10" class="w-full px-5 py-4 rounded-2xl border-2 border-indigo-50 bg-indigo-50 font-black text-4xl text-center outline-none"></div>
-                    <div><label class="block text-[10px] font-black text-gray-400 uppercase mb-3 text-left pl-1">Masa</label><input type="number" id="entryTime" placeholder="45" class="w-full px-5 py-4 rounded-2xl border-2 border-indigo-50 bg-indigo-50 font-black text-4xl text-center outline-none"></div>
-                </div>
-                <button onclick="saveEntry()" class="w-full py-5 bg-indigo-700 text-white rounded-2xl font-black text-xl">Simpan</button>
-                <button onclick="closeEntryModal()" class="w-full py-2 text-gray-400 font-bold uppercase text-[10px]">Batal</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Print Area -->
     <div id="printArea" class="hidden bg-white"></div>
 
@@ -454,15 +433,14 @@
         let peer = null;
         let conn = null;
         let myPeerId = null;
-        let raceStartTime = null;
         let liveLeaderboard = [];
-        let remoteScannerHtml5QrCode = null;
+        let html5QrCode = null;
         let isConnected = false;
 
         // --- Init State ---
         let currentSifir = null, currentMode = 'learn', lang = 'ms';
         let score = { correct: 0, total: 0 }, activeMultiplier = null, currentSubStep = 0;
-        let timerInterval = null, timeElapsed = 0, html5QrCode = null;
+        let timerInterval = null, timeElapsed = 0;
         let students = JSON.parse(localStorage.getItem('krd_students_v3') || '[]');
         let records = JSON.parse(localStorage.getItem('krd_records_v3') || '[]');
         let activeStudent = null, scanTargetSifir = 1;
@@ -476,362 +454,145 @@
             9: { val: 1, type: 'minus', display: '-1' }
         };
 
-        // --- PeerJS / Synergy Logic (CODE BASED) ---
+        // --- PeerJS / Synergy Logic ---
         function switchSynergyTab(tab) {
             if(tab === 'host') {
                 document.getElementById('synergyHostView').classList.remove('hidden');
                 document.getElementById('synergyClientView').classList.add('hidden');
                 document.getElementById('tabHost').classList.add('bg-white', 'text-indigo-900', 'shadow-sm');
-                document.getElementById('tabHost').classList.remove('text-gray-500');
                 document.getElementById('tabClient').classList.remove('bg-white', 'text-indigo-900', 'shadow-sm');
-                document.getElementById('tabClient').classList.add('text-gray-500');
             } else {
                 document.getElementById('synergyHostView').classList.add('hidden');
                 document.getElementById('synergyClientView').classList.remove('hidden');
                 document.getElementById('tabClient').classList.add('bg-white', 'text-indigo-900', 'shadow-sm');
-                document.getElementById('tabClient').classList.remove('text-gray-500');
                 document.getElementById('tabHost').classList.remove('bg-white', 'text-indigo-900', 'shadow-sm');
-                document.getElementById('tabHost').classList.add('text-gray-500');
             }
         }
-
-        function openSynergyModal() {
-            document.getElementById('synergyModal').classList.remove('hidden');
-            switchSynergyTab('host'); // Default view
-        }
-
-        function closeSynergyModal() {
-            document.getElementById('synergyModal').classList.add('hidden');
-        }
-
-        // Host (LCD) Initialization
+        function openSynergyModal() { document.getElementById('synergyModal').classList.remove('hidden'); switchSynergyTab('host'); }
+        function closeSynergyModal() { document.getElementById('synergyModal').classList.add('hidden'); }
         function initSynergyHost() {
             document.getElementById('synergyLoading').classList.remove('hidden');
             const code = Math.random().toString(36).substring(2, 7).toUpperCase();
-            const peerId = `cx-${code}`; // Prefix to ensure valid ID
-            
             if(peer) peer.destroy();
-            
-            peer = new Peer(peerId);
-            
+            peer = new Peer(`cx-${code}`);
             peer.on('open', (id) => {
-                myPeerId = id;
-                document.getElementById('synergyLoading').classList.add('hidden');
+                myPeerId = id; document.getElementById('synergyLoading').classList.add('hidden');
                 document.getElementById('synergyCodeDisplay').innerText = code;
-                
-                const lcdStatus = document.getElementById('lcdRemoteStatus');
-                if(lcdStatus) lcdStatus.innerText = `Menunggu (${code})`;
+                const s = document.getElementById('lcdRemoteStatus'); if(s) s.innerText = `Menunggu (${code})`;
             });
-            
-            peer.on('connection', (c) => {
-                conn = c;
-                setupConnection(true);
-            });
-            
-            peer.on('error', (err) => {
-                alert("Ralat sambungan. ID mungkin sudah digunakan. Cuba lagi.");
-                initSynergyHost();
-            });
+            peer.on('connection', (c) => { conn = c; setupConnection(true); });
+            peer.on('error', () => { alert("Ralat ID. Cuba lagi."); initSynergyHost(); });
         }
-
-        // Client (Phone) Join
         function joinSynergySession() {
-            const input = document.getElementById('sessionCodeInput').value.trim();
+            const input = document.getElementById('sessionCodeInput').value.trim().toUpperCase();
             if(!input) return alert("Sila masukkan kod.");
-            
-            const targetId = `cx-${input.toUpperCase()}`;
             document.getElementById('synergyLoading').classList.remove('hidden');
-            
             if(peer) peer.destroy();
             peer = new Peer();
-            
-            peer.on('open', (id) => {
-                conn = peer.connect(targetId);
-                conn.on('open', () => {
-                    document.getElementById('synergyLoading').classList.add('hidden');
-                    setupConnection(false);
-                });
-                conn.on('error', (err) => {
-                    alert("Gagal menyambung. Semak kod semula.");
-                    document.getElementById('synergyLoading').classList.add('hidden');
-                });
+            peer.on('open', () => {
+                conn = peer.connect(`cx-${input}`);
+                conn.on('open', () => { document.getElementById('synergyLoading').classList.add('hidden'); setupConnection(false); });
+                conn.on('error', () => { alert("Gagal sambung."); document.getElementById('synergyLoading').classList.add('hidden'); });
             });
         }
-
         function setupConnection(isHost) {
-            isConnected = true;
-            closeSynergyModal();
+            isConnected = true; closeSynergyModal();
             document.getElementById('connectionStatus').innerText = isHost ? "HOST MODE" : "REMOTE CONNECTED";
             document.getElementById('connectionStatus').className = "text-[10px] font-bold text-emerald-500 uppercase tracking-wider animate-pulse";
-            
             if(isHost) {
-                const lcdStatus = document.getElementById('lcdRemoteStatus');
-                if(lcdStatus) {
-                    lcdStatus.innerText = "TERSAMBUNG";
-                    lcdStatus.classList.add("text-emerald-400");
-                }
-                alert("Telefon guru berjaya disambungkan!");
-                
-                // Host listens for data
-                conn.on('data', (data) => {
-                    if(data.type === 'SCAN_ENTRY') {
-                        handleRaceEntry(data.payload);
-                    }
-                });
-            } else {
-                // Client: Auto open scanner for convenience
-                alert("Sambungan berjaya! Telefon kini berfungsi sebagai pengimbas remote.");
-                startRemoteScanner();
-            }
+                const s = document.getElementById('lcdRemoteStatus'); if(s) { s.innerText="TERSAMBUNG"; s.classList.add("text-emerald-400"); }
+                alert("Telefon disambungkan!");
+                conn.on('data', (d) => { if(d.type==='SCAN_ENTRY') handleRaceEntry(d.payload); });
+            } else { alert("Berjaya! Telefon kini berfungsi sebagai pengimbas."); }
         }
 
-        // Handle Entry (LCD)
-        function handleRaceEntry(payload) {
-            // Calculate elapsed time from countdown
-            const selectTime = document.getElementById('lcdTimeSelect').value;
-            let initialTime = 600;
-            
-            if (selectTime === 'custom') {
-               initialTime = (document.getElementById('lcdCustomTime').value || 10) * 60;
-            } else {
-               initialTime = parseInt(selectTime);
-            }
-            
-            const elapsed = initialTime - lcdTimeLeft;
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = elapsed % 60;
-            const timeString = `${minutes}m ${seconds}s`;
-            
-            // Check duplicates
-            const exists = liveLeaderboard.find(r => r.name === payload.name && r.kls === payload.kls);
-            if(exists) return; 
-
-            liveLeaderboard.push({
-                name: payload.name,
-                kls: payload.kls,
-                timeStr: timeString,
-                timestamp: elapsed
-            });
-            
+        // --- LCD Logic ---
+        function handleRaceEntry(p) {
+            const time = document.getElementById('lcdTimerDisplay').innerText;
+            const exists = liveLeaderboard.find(r => r.name===p.name && r.kls===p.kls);
+            if(exists) return;
+            // Elapsed Calculation (Simplified for display)
+            // Use remaining time to calculate sort order (Higher remaining = faster finish if counting down)
+            liveLeaderboard.push({ name:p.name, kls:p.kls, timeStr:time, timestamp:lcdTimeLeft });
             updateLCDLeaderboardUI();
         }
-
         function updateLCDLeaderboardUI() {
             const list = document.getElementById('lcdLeaderboardList');
             const filter = document.getElementById('lcdClassFilter').value;
-            let displayData = liveLeaderboard;
+            let data = liveLeaderboard;
+            if(filter!=='all') data = liveLeaderboard.filter(r=>r.kls===filter);
+            data.sort((a,b)=>b.timestamp - a.timestamp); // Higher timestamp (remaining) means faster if countdown
             
-            if(filter !== 'all') {
-                displayData = liveLeaderboard.filter(r => r.kls === filter);
-            }
-            
-            // Sort by fastest time
-            displayData.sort((a,b) => a.timestamp - b.timestamp);
-            
-            list.innerHTML = "";
-            document.getElementById('leaderboardCount').innerText = displayData.length;
-            
-            displayData.forEach((r, idx) => {
+            list.innerHTML = ""; document.getElementById('leaderboardCount').innerText = data.length;
+            data.forEach((r,i) => {
                 const el = document.createElement('div');
                 el.className = "leaderboard-item show bg-white/10 p-3 rounded-xl flex justify-between items-center text-white border border-white/10";
-                el.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-white text-indigo-900 font-black flex items-center justify-center">${idx + 1}</div>
-                        <div>
-                            <p class="font-bold leading-tight">${r.name}</p>
-                            <p class="text-[10px] opacity-70 uppercase">${r.kls}</p>
-                        </div>
-                    </div>
-                    <p class="font-mono font-bold text-emerald-400 text-xl">${r.timeStr}</p>
-                `;
+                el.innerHTML = `<div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full bg-white text-indigo-900 font-black flex items-center justify-center">${i+1}</div><div><p class="font-bold leading-tight">${r.name}</p><p class="text-[10px] opacity-70 uppercase">${r.kls}</p></div></div><p class="font-mono font-bold text-emerald-400 text-xl">${r.timeStr}</p>`;
                 list.appendChild(el);
             });
         }
-
-        function filterLeaderboard() {
-            updateLCDLeaderboardUI();
-        }
-
-        // --- PODIUM LOGIC ---
+        function filterLeaderboard() { updateLCDLeaderboardUI(); }
         function finishRace() {
-            clearInterval(lcdCountdownInterval);
-            lcdCountdownInterval = null;
-            document.getElementById('lcdStartBtn').innerText = "MULA";
+            clearInterval(lcdCountdownInterval); lcdCountdownInterval=null; document.getElementById('lcdStartBtn').innerText="MULA";
             renderPodium();
         }
-
         function renderPodium() {
             const filter = document.getElementById('lcdClassFilter').value;
-            let finalData = liveLeaderboard;
-            if(filter !== 'all') finalData = liveLeaderboard.filter(r => r.kls === filter);
+            let data = liveLeaderboard;
+            if(filter!=='all') data = liveLeaderboard.filter(r=>r.kls===filter);
+            data.sort((a,b)=>b.timestamp - a.timestamp);
             
-            // Sort by fastest
-            finalData.sort((a,b) => a.timestamp - b.timestamp);
-
-            const winners = finalData.slice(0, 3);
+            const w = data.slice(0,3);
+            if(w[0]) { document.getElementById('winner1Name').innerText=w[0].name; document.getElementById('winner1Time').innerText=w[0].timeStr; }
+            if(w[1]) { document.getElementById('winner2Name').innerText=w[1].name; document.getElementById('winner2Time').innerText=w[1].timeStr; }
+            if(w[2]) { document.getElementById('winner3Name').innerText=w[2].name; document.getElementById('winner3Time').innerText=w[2].timeStr; }
             
-            if(winners[0]) {
-                document.getElementById('winner1Name').innerText = winners[0].name;
-                document.getElementById('winner1Time').innerText = winners[0].timeStr;
-            }
-            if(winners[1]) {
-                document.getElementById('winner2Name').innerText = winners[1].name;
-                document.getElementById('winner2Time').innerText = winners[1].timeStr;
-            }
-            if(winners[2]) {
-                document.getElementById('winner3Name').innerText = winners[2].name;
-                document.getElementById('winner3Time').innerText = winners[2].timeStr;
-            }
-
-            // Fill the rest
-            const restContainer = document.getElementById('restOfLeaderboard');
-            restContainer.innerHTML = "";
-            finalData.slice(3, 11).forEach((r, idx) => {
-                restContainer.innerHTML += `<div class="bg-indigo-900/40 p-2 rounded-lg flex justify-between"><span>${idx+4}. ${r.name}</span><span>${r.timeStr}</span></div>`;
-            });
-
-            // Show Podium Overlay
+            const rc = document.getElementById('restOfLeaderboard'); rc.innerHTML="";
+            data.slice(3,11).forEach((r,i)=>{ rc.innerHTML += `<div class="bg-indigo-900/40 p-2 rounded-lg flex justify-between"><span>${i+4}. ${r.name}</span><span>${r.timeStr}</span></div>`; });
+            
             document.getElementById('podiumView').classList.remove('hidden');
-            
-            // Trigger Confetti
-            var duration = 5 * 1000;
-            var animationEnd = Date.now() + duration;
-            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 50 };
-
-            function random(min, max) { return Math.random() * (max - min) + min; }
-
-            var interval = setInterval(function() {
-                var timeLeft = animationEnd - Date.now();
-                if (timeLeft <= 0) return clearInterval(interval);
-                var particleCount = 50 * (timeLeft / duration);
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.1, 0.3), y: Math.random() - 0.2 } }));
-                confetti(Object.assign({}, defaults, { particleCount, origin: { x: random(0.7, 0.9), y: Math.random() - 0.2 } }));
-            }, 250);
+            var duration = 3000; var end = Date.now() + duration;
+            (function frame() {
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 } });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 } });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+        function hidePodium() { document.getElementById('podiumView').classList.add('hidden'); }
+        function openLCDMode() { document.getElementById('lcdModal').classList.remove('hidden'); document.getElementById('lcdTimerDisplay').innerText="10:00"; updateClassDropdownLCD(); }
+        function closeLCDMode() { document.getElementById('lcdModal').classList.add('hidden'); resetLcdCountdown(); }
+        function updateClassDropdownLCD() {
+            const d = document.getElementById('lcdClassFilter');
+            const u = [...new Set(students.map(s => s.kls))].sort();
+            d.innerHTML = '<option value="all">SEMUA</option>' + u.map(c => `<option value="${c}">${c}</option>`).join('');
         }
 
-        function hidePodium() {
-            document.getElementById('podiumView').classList.add('hidden');
-        }
-
-        function openLCDMode() {
-            document.getElementById('lcdModal').classList.remove('hidden');
-            document.getElementById('lcdTimerDisplay').innerText = "10:00";
-            
-            // Populate class filter in LCD
-            const classFilter = document.getElementById('lcdClassFilter');
-            const unique = [...new Set(students.map(s => s.kls))].sort();
-            classFilter.innerHTML = '<option value="all">SEMUA</option>' + unique.map(c => `<option value="${c}">${c}</option>`).join('');
-        }
-
-        function closeLCDMode() {
-            document.getElementById('lcdModal').classList.add('hidden');
-            resetLcdCountdown();
-        }
-
-        // --- Remote Scanner (Teacher Phone) Logic ---
-        function startRemoteScanner() {
-            document.getElementById('remoteScannerModal').classList.remove('hidden');
-            startHtml5RemoteScanner();
-        }
-
-        function startHtml5RemoteScanner() {
-            if(remoteScannerHtml5QrCode) return; // Already running
-            
-            remoteScannerHtml5QrCode = new Html5Qrcode("remoteScannerVideo");
-            remoteScannerHtml5QrCode.start(
-                { facingMode: "environment" }, 
-                { fps: 15, qrbox: { width: 300, height: 300 } }, // Optimized box
-                (decodedText) => {
-                    if(decodedText.startsWith("LOGIN:")) {
-                        const parts = decodedText.replace("LOGIN:", "").split("|");
-                        const studentName = parts[0];
-                        const studentClass = parts[1];
-                        
-                        if(conn && conn.open) {
-                            conn.send({
-                                type: 'SCAN_ENTRY',
-                                payload: { name: studentName, kls: studentClass }
-                            });
-                            
-                            // Visual & Haptic Feedback
-                            playSuccessSound();
-                            showToast(studentName);
-                            if (navigator.vibrate) navigator.vibrate(200);
-                            
-                            // Pause briefly
-                            remoteScannerHtml5QrCode.pause();
-                            setTimeout(() => remoteScannerHtml5QrCode.resume(), 1500);
-                        } else {
-                            alert("Terputus sambungan dengan LCD.");
-                        }
-                    }
-                }
-            ).catch(err => {
-                console.log(err);
-                alert("Ralat kamera remote.");
-            });
-        }
-        
-        function playSuccessSound() {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.frequency.value = 800; // Beep freq
-            osc.type = "sine";
-            gain.gain.value = 0.1;
-            osc.start();
-            gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.15);
-            setTimeout(() => osc.stop(), 150);
-        }
-        
-        function showToast(name) {
-            const toast = document.getElementById('toast-notification');
-            const toastName = document.getElementById('toast-name');
-            toastName.innerText = `DATA ${name.toUpperCase()} DIHANTAR`;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 2000);
-        }
-
-        function stopRemoteScanner() {
-            if(remoteScannerHtml5QrCode) {
-                remoteScannerHtml5QrCode.stop().then(() => {
-                    document.getElementById('remoteScannerModal').classList.add('hidden');
-                    remoteScannerHtml5QrCode = null;
-                });
-            } else {
-                document.getElementById('remoteScannerModal').classList.add('hidden');
-            }
-        }
-
-        // --- Scanner Logic (Main) ---
+        // --- Scanner Logic ---
         function toggleScanner() { 
             const m = document.getElementById('scannerModal'); 
-            if(!m.classList.contains('hidden')) { if(html5QrCode) html5QrCode.stop(); m.classList.add('hidden'); }
-            else { 
-                m.classList.remove('hidden'); html5QrCode = new Html5Qrcode("reader"); 
-                html5QrCode.start({facingMode:"environment"}, {fps:15,qrbox:250}, (t)=>{ // Optimized FPS
+            if(!m.classList.contains('hidden')) { 
+                if(html5QrCode) html5QrCode.stop().then(() => html5QrCode.clear()); 
+                m.classList.add('hidden'); 
+            } else { 
+                m.classList.remove('hidden'); 
+                html5QrCode = new Html5Qrcode("reader"); 
+                html5QrCode.start({facingMode:"environment"}, {fps:20,qrbox:250}, (t)=>{ 
                     try {
                         if(t.startsWith("LOGIN:")) { 
                             const p = t.replace("LOGIN:","").split("|"); 
-                            const sName = p[0];
-                            const sClass = p[1];
+                            const sName = p[0]; const sClass = p[1];
                             
                             if(isConnected && conn && conn.open) {
-                                conn.send({
-                                    type: 'SCAN_ENTRY',
-                                    payload: { name: sName, kls: sClass }
-                                });
-                                playSuccessSound();
-                                showToast(sName);
+                                // Remote Mode: Continuous Scan
+                                conn.send({ type: 'SCAN_ENTRY', payload: { name: sName, kls: sClass } });
+                                playBeep(); showToast(sName);
                                 html5QrCode.pause();
-                                setTimeout(() => html5QrCode.resume(), 1500);
+                                setTimeout(() => html5QrCode.resume(), 1500); // Resume fast
                             } else {
+                                // Standalone Mode: Stop & Open Entry
                                 activeStudent={name:sName,kls:sClass}; 
-                                toggleScanner(); 
+                                playBeep();
+                                toggleScanner(); // Stop scanner immediately
                                 openEntryModal();
                             }
                         }
@@ -839,121 +600,104 @@
                 }); 
             }
         }
+        
+        function playBeep() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator(); const g = ctx.createGain();
+            osc.connect(g); g.connect(ctx.destination);
+            osc.frequency.value = 800; osc.type = "sine"; g.gain.value = 0.1;
+            osc.start(); g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.1);
+            setTimeout(() => osc.stop(), 100);
+        }
+        function showToast(n) {
+            const t = document.getElementById('toast-notification');
+            document.getElementById('toast-name').innerText = n;
+            document.getElementById('toast-desc').innerText = "Direkod ke LCD";
+            t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000);
+        }
 
-        // --- LCD Timer Logic ---
+        // --- LCD Timer ---
         function startLcdCountdown() {
-            if(lcdCountdownInterval) { clearInterval(lcdCountdownInterval); lcdCountdownInterval = null; document.getElementById('lcdStartBtn').innerText = "SAMBUNG"; return; }
-            
-            const select = document.getElementById('lcdTimeSelect');
-            if (select.value === 'custom') {
-                const val = document.getElementById('lcdCustomTime').value;
-                if(!val) return alert("Masukkan masa.");
-                if(lcdTimeLeft === 600 || lcdTimeLeft === 0) lcdTimeLeft = val * 60;
-            } else {
-                if(lcdTimeLeft === 600 || lcdTimeLeft === 0) lcdTimeLeft = parseInt(select.value);
-            }
-
-            document.getElementById('lcdStartBtn').innerText = "BERHENTI";
-            lcdCountdownInterval = setInterval(() => { 
-                lcdTimeLeft--; 
-                updateLcdDisplay(); 
-                if(lcdTimeLeft <= 0) { 
-                    clearInterval(lcdCountdownInterval); 
-                    lcdCountdownInterval = null; 
-                    finishRace(); // Trigger finish/podium automatically
-                } 
+            if(lcdCountdownInterval) { clearInterval(lcdCountdownInterval); lcdCountdownInterval=null; document.getElementById('lcdStartBtn').innerText="SAMBUNG"; return; }
+            const sel = document.getElementById('lcdTimeSelect').value;
+            if(lcdTimeLeft==600 || lcdTimeLeft==0) lcdTimeLeft = sel==='custom' ? (document.getElementById('lcdCustomTime').value*60) : parseInt(sel);
+            document.getElementById('lcdStartBtn').innerText="BERHENTI";
+            lcdCountdownInterval = setInterval(() => {
+                lcdTimeLeft--; updateLcdDisplay();
+                if(lcdTimeLeft<=0) { clearInterval(lcdCountdownInterval); lcdCountdownInterval=null; finishRace(); }
             }, 1000);
         }
-
-        function resetLcdCountdown() { 
-            clearInterval(lcdCountdownInterval); lcdCountdownInterval = null; lcdTimeLeft = 600; 
-            document.getElementById('lcdTimerDisplay').innerText = "10:00"; 
-            document.getElementById('lcdStartBtn').innerText = "MULA";
-            liveLeaderboard = [];
-            updateLCDLeaderboardUI();
-        }
-
-        function updateLcdDisplay() { 
-            const m = Math.floor(lcdTimeLeft/60).toString().padStart(2, '0');
-            const s = (lcdTimeLeft%60).toString().padStart(2, '0'); 
-            document.getElementById('lcdTimerDisplay').innerText = `${m}:${s}`; 
-        }
-
+        function resetLcdCountdown() { clearInterval(lcdCountdownInterval); lcdCountdownInterval=null; lcdTimeLeft=600; updateLcdDisplay(); document.getElementById('lcdStartBtn').innerText="MULA"; liveLeaderboard=[]; updateLCDLeaderboardUI(); }
+        function updateLcdDisplay() { const m=Math.floor(lcdTimeLeft/60).toString().padStart(2,'0'), s=(lcdTimeLeft%60).toString().padStart(2,'0'); document.getElementById('lcdTimerDisplay').innerText=`${m}:${s}`; }
         document.getElementById('lcdTimeSelect').addEventListener('change', function() {
-            const cust = document.getElementById('lcdCustomTime');
-            if(this.value === 'custom') {
-                cust.classList.remove('hidden');
-            } else {
-                cust.classList.add('hidden');
-                lcdTimeLeft = parseInt(this.value);
-                updateLcdDisplay();
-            }
+            const c = document.getElementById('lcdCustomTime');
+            if(this.value==='custom') c.classList.remove('hidden'); else { c.classList.add('hidden'); lcdTimeLeft=parseInt(this.value); updateLcdDisplay(); }
         });
 
-        // --- Main App Logic (Existing) ---
-        function updateClassDropdown() {
-            const drop = document.getElementById('classDropdown'), printDrop = document.getElementById('printClassSelect');
-            const unique = [...new Set(students.map(s => s.kls))].sort();
-            const opts = unique.map(c => `<option value="${c}">${c}</option>`).join('');
-            drop.innerHTML = '<option value="">Pilih Kelas...</option>' + opts;
-            printDrop.innerHTML = '<option value="all">SEMUA KELAS</option>' + opts;
+        // --- Learning Logic (Restored Scaffolding) ---
+        function updateLearnUI() {
+            const m = activeMultiplier, res = currentSifir * m, prevSa = (currentSifir * (m-1)) % 10, currSa = res % 10, action = krdActions[currentSifir];
+            let content = `<h2 class="text-3xl font-black text-pdp-primary mb-6 text-center">${currentSifir} × ${m}</h2>`;
+            
+            // Step 1: Find Ones (Detailed)
+            if(currentSubStep >= 1) {
+                content += `
+                <div class="step-box border-l-8 border-amber-500 bg-amber-50">
+                    <p class="text-xs font-black text-amber-700 uppercase mb-2 tracking-widest underline">Langkah 1: Cari Sa</p>
+                    <div class="flex items-center justify-center gap-6">
+                        <div class="text-center"><p class="text-[10px] uppercase font-bold text-gray-400">Sa Lama</p><p class="text-2xl font-black text-gray-700">${prevSa}</p></div>
+                        <div class="text-2xl font-black text-amber-600">${action.display}</div>
+                        <div class="text-center"><p class="text-[10px] uppercase font-bold text-gray-400">Sa Baru</p><p class="text-3xl font-black text-amber-800">${currSa}</p></div>
+                    </div>
+                </div>`;
+            }
+            
+            // Step 2: Find Tens (Detailed)
+            if(currentSubStep >= 2) {
+                const rule = (prevSa > currSa && m > 1) ? "Sa Menurun (A): Tambah 1 pada Puluh" : "Sa Naik/Sama (B): Puluh Kekal";
+                const color = (prevSa > currSa && m > 1) ? "text-red-600" : "text-emerald-600";
+                content += `
+                <div class="step-box border-l-8 border-indigo-500 bg-indigo-50">
+                    <p class="text-xs font-black text-indigo-700 uppercase mb-2 tracking-widest underline">Langkah 2: Cari Puluh</p>
+                    <p class="text-lg font-black ${color} text-center leading-tight">${rule}</p>
+                </div>`;
+            }
+            
+            // Step 3: Result
+            if(currentSubStep === 3) {
+                const ans = document.getElementById(`ans-${m}`); ans.textContent = res < 10 ? `0${res}` : res; ans.classList.replace('fill-indigo-200', 'fill-indigo-900');
+                content += `<div class="mt-6 p-8 bg-indigo-800 text-white rounded-[2rem] text-center shadow-2xl animate-fade-up"><p class="text-xs font-black uppercase opacity-60 mb-1 tracking-widest">Jawapan Akhir</p><p class="text-6xl font-black">${res}</p></div>`;
+                document.getElementById('guideActions').innerHTML = `<button onclick="selectSifir(${currentSifir})" class="w-full py-4 bg-gray-100 rounded-2xl font-black text-gray-500 hover:bg-indigo-50 transition-all shadow-sm">Teruskan Seterusnya!</button>`;
+            } else { 
+                document.getElementById('guideActions').innerHTML = `<button onclick="currentSubStep++; updateLearnUI();" class="w-full py-4 bg-indigo-700 text-white rounded-2xl font-black shadow-xl hover:bg-indigo-800 transition-all">Langkah Seterusnya</button>`; 
+            }
+            document.getElementById('guideContent').innerHTML = content;
         }
-        function loadStudentsByClass() {
-            const kls = document.getElementById('classDropdown').value, drop = document.getElementById('studentDropdown');
-            if(!kls) { drop.innerHTML = '<option value="">Pilih Murid...</option>'; return; }
-            drop.innerHTML = '<option value="">Pilih Murid...</option>' + students.filter(s => s.kls === kls).sort((a,b)=>a.name.localeCompare(b.name)).map(s => `<option value="${s.name}">${s.name}</option>`).join('');
-        }
-        function selectStudentFromList() {
-            const name = document.getElementById('studentDropdown').value, kls = document.getElementById('classDropdown').value;
-            if(!name) { activeStudent = null; updateStudentUI(); return; }
-            activeStudent = students.find(s => s.name === name && s.kls === kls);
-            updateStudentUI();
-        }
-        function updateStudentUI() {
-            const d = document.getElementById('studentDetail'), p = document.getElementById('noStudentText'), i = document.getElementById('activeStudentInfo');
-            if(activeStudent) { d.classList.remove('hidden'); p.classList.add('hidden'); i.classList.remove('hidden'); document.getElementById('dispName').innerText = activeStudent.name; document.getElementById('dispClass').innerText = activeStudent.kls; }
-            else { d.classList.add('hidden'); p.classList.remove('hidden'); i.classList.add('hidden'); }
-        }
-        function addStudent() {
-            const n = document.getElementById('addName').value.trim(), k = document.getElementById('addClass').value.trim().toUpperCase();
-            if(!n || !k) return;
-            students.push({ name: n, kls: k }); localStorage.setItem('krd_students_v3', JSON.stringify(students));
-            document.getElementById('addName').value = ''; document.getElementById('addClass').value = '';
-            updateClassDropdown(); renderStudentList();
-        }
-        function addBulkStudents() {
-            const raw = document.getElementById('bulkInput').value; if(!raw) return;
-            raw.split('\n').forEach(l => { const p = l.split(','); if(p.length>=2) students.push({name:p[0].trim(), kls:p[1].trim().toUpperCase()}); });
-            localStorage.setItem('krd_students_v3', JSON.stringify(students));
-            updateClassDropdown(); renderStudentList(); document.getElementById('bulkInput').value='';
-        }
-        function renderStudentList() {
-            const l = document.getElementById('studentListContainer');
-            l.innerHTML = students.length ? '' : '<p class="text-center text-gray-300 py-6 text-[10px]">TIADA DATA</p>';
-            [...students].reverse().slice(0,50).forEach((s, idx) => {
-                const d = document.createElement('div'); d.className = "flex justify-between p-3 bg-white border shadow-sm rounded-xl mb-2";
-                d.innerHTML = `<div><p class="font-bold text-sm">${s.name}</p><p class="text-[10px] text-gray-500">${s.kls}</p></div><button onclick="removeStudent(${students.length-1-idx})" class="text-red-500 font-black">×</button>`;
-                l.appendChild(d);
-            });
-        }
-        function removeStudent(idx) { students.splice(idx, 1); localStorage.setItem('krd_students_v3', JSON.stringify(students)); updateClassDropdown(); renderStudentList(); }
-        function renderGradebook() {
-            const l = document.getElementById('gradebookList');
-            l.innerHTML = records.length ? '' : '<p class="text-center text-gray-300 py-6 text-[10px]">TIADA REKOD</p>';
-            [...records].reverse().forEach(r => {
-                const d = document.createElement('div'); d.className = "p-3 bg-indigo-50 border rounded-xl mb-2";
-                d.innerHTML = `<p class="font-bold text-xs">${r.name}</p><p class="text-[10px]">Sifir ${r.sifir} | Skor ${r.score} | ${r.time}s</p>`;
-                l.appendChild(d);
-            });
-        }
-        function clearAllData() { if(confirm("Padam semua?")) { students=[]; records=[]; localStorage.clear(); updateClassDropdown(); renderStudentList(); renderGradebook(); } }
 
+        function updatePracticeRuleUI(correct) {
+            document.getElementById('guideContent').innerHTML = `
+            <h2 class="text-xl font-black text-indigo-900 mb-6 text-center uppercase tracking-widest">Pilih Peraturan?</h2>
+            <div class="flex flex-col gap-4">
+                <button onclick="checkRule('A', '${correct}')" class="p-6 bg-white border-4 border-indigo-100 rounded-3xl shadow-sm hover:bg-indigo-50 text-left group transition-all">
+                    <span class="block text-xs font-black text-indigo-400 uppercase tracking-widest mb-1">Peraturan A</span>
+                    <span class="block text-lg font-black text-indigo-900 group-hover:text-indigo-700">Sa Menurun: Tambah 1</span>
+                </button>
+                <button onclick="checkRule('B', '${correct}')" class="p-6 bg-white border-4 border-indigo-100 rounded-3xl shadow-sm hover:bg-indigo-50 text-left group transition-all">
+                    <span class="block text-xs font-black text-indigo-400 uppercase tracking-widest mb-1">Peraturan B</span>
+                    <span class="block text-lg font-black text-indigo-900 group-hover:text-indigo-700">Sa Naik/Sama: Kekal</span>
+                </button>
+            </div>`;
+        }
+
+        // --- Core & Helper ---
         function setMode(mode) { currentMode = mode; document.getElementById('scoreCard').classList.toggle('hidden', mode === 'learn'); resetApp(); }
-        function selectSifir(num) { 
-            currentSifir = num; resetTimer(); 
-            document.querySelectorAll('.sifir-btn').forEach(b => b.classList.remove('border-indigo-600', 'bg-indigo-100'));
-            document.getElementById(`sifir-${num}`).classList.add('border-indigo-600', 'bg-indigo-100');
+        function selectSifir(num) { currentSifir = num; resetTimer(); 
+            document.querySelectorAll('.sifir-btn').forEach(b => b.classList.remove('border-indigo-600', 'bg-indigo-50', 'text-indigo-900', 'ring-2', 'ring-indigo-200'));
+            document.getElementById(`sifir-${num}`).classList.add('border-indigo-600', 'bg-indigo-50', 'text-indigo-900', 'ring-2', 'ring-indigo-200');
+            document.querySelectorAll('[id^="mnl-"]').forEach(m => m.classList.remove('mnl-active'));
+            document.getElementById(`mnl-${num}`).classList.add('mnl-active');
             renderWheel(num);
+            document.getElementById('guideContent').innerHTML = `<div class="text-center mt-12"><h2 class="text-4xl font-black text-pdp-primary tracking-tight">SIFIR ${num}</h2><p class="text-xs font-black text-indigo-400 uppercase tracking-[0.3em] mt-2">Sedia Untuk PdP</p></div>`;
         }
         function renderWheel(num) {
             const w = document.getElementById('wheelWrapper'); w.innerHTML = '';
@@ -962,18 +706,18 @@
                 const a = i*36-90, rad = ((a+18)*Math.PI)/180;
                 const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 path.setAttribute("d", createArcPath(200,200,85,175,a,a+36));
-                path.setAttribute("fill", "white"); path.setAttribute("stroke", "#e0e7ff"); path.setAttribute("stroke-width", "3");
+                path.setAttribute("fill", "white"); path.setAttribute("stroke", "#e0e7ff"); path.setAttribute("stroke-width", "2.5");
                 path.onclick = () => handleSegmentClick(i+1);
                 
                 const txt = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 txt.setAttribute("x", 200+Math.cos(rad)*65); txt.setAttribute("y", 200+Math.sin(rad)*65);
                 txt.setAttribute("text-anchor", "middle"); txt.setAttribute("alignment-baseline", "middle");
-                txt.textContent = i+1; txt.classList.add("font-black", "fill-indigo-900", "pointer-events-none");
+                txt.textContent = i+1; txt.classList.add("font-black", "fill-indigo-950", "pointer-events-none");
                 
                 const ans = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 ans.setAttribute("x", 200+Math.cos(rad)*135); ans.setAttribute("y", 200+Math.sin(rad)*135+5);
                 ans.setAttribute("text-anchor", "middle");
-                ans.textContent = "??"; ans.id = `ans-${i+1}`; ans.classList.add("font-bold", "fill-gray-300", "pointer-events-none");
+                ans.textContent = "??"; ans.id = `ans-${i+1}`; ans.classList.add("font-bold", "fill-indigo-200", "pointer-events-none");
                 
                 svg.append(path, txt, ans);
             }
@@ -985,16 +729,36 @@
             if(currentMode==='practice' && !timerInterval && score.total===0) startTimer();
             activeMultiplier = m; currentSubStep = 1; updateLearnUI();
         }
-        function updateLearnUI() {
-            const res = currentSifir * activeMultiplier;
-            const ans = document.getElementById(`ans-${activeMultiplier}`);
-            if(currentMode === 'learn') {
-                ans.textContent = res; ans.classList.replace('fill-gray-300','fill-indigo-900');
-            } else {
-                const userAns = prompt("Jawapan?");
-                if(parseInt(userAns) === res) { ans.textContent = res; ans.classList.replace('fill-gray-300','fill-emerald-600'); score.correct++; }
-                score.total++; document.getElementById('currentScore').innerText = `${score.correct}/${score.total}`;
-            }
+        function startPracticeUI() {
+            const currSa = (currentSifir * activeMultiplier) % 10;
+            document.getElementById('guideContent').innerHTML = `<h2 class="text-xl font-black text-indigo-900 mb-8 text-center uppercase tracking-widest">Berapakah nilai Sa?</h2><div class="grid grid-cols-5 gap-2">${[0,1,2,3,4,5,6,7,8,9].map(i => `<button onclick="checkSa(${i}, ${currSa})" class="h-14 bg-white border-2 border-indigo-100 rounded-2xl font-black text-xl shadow-sm hover:bg-indigo-50 transition-all text-indigo-900">${i}</button>`).join('')}</div>`;
+            document.getElementById('guideActions').innerHTML = "";
+        }
+        function checkSa(val, correct) {
+            if(val === correct) { const prevSa = (currentSifir * (activeMultiplier-1)) % 10, correctRule = (prevSa > correct && activeMultiplier > 1) ? 'A' : 'B'; score.correct++; updatePracticeRuleUI(correctRule); }
+            else alert("Salah! Guna aksi MNL.");
+            score.total++; document.getElementById('currentScore').innerText = `${score.correct}/${score.total}`;
+        }
+        function checkRule(val, correct) {
+            if(val === correct || activeMultiplier === 1) {
+                const res = currentSifir * activeMultiplier;
+                const ans = document.getElementById(`ans-${activeMultiplier}`); ans.textContent = res < 10 ? `0${res}` : res; ans.classList.replace('fill-indigo-200', 'fill-indigo-900');
+                document.getElementById('guideContent').innerHTML = `<div class="text-center py-10 animate-fade-up"><p class="text-8xl font-black text-emerald-600 leading-none">${res}</p><p class="mt-6 text-xl font-black text-emerald-500 uppercase tracking-widest">BETUL!</p></div>`;
+                document.getElementById('guideActions').innerHTML = `<button onclick="nextPractice()" class="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black shadow-xl">Teruskan</button>`;
+                score.correct++;
+            } else alert("Peraturan salah!");
+            score.total++; document.getElementById('currentScore').innerText = `${score.correct}/${score.total}`;
+        }
+        function nextPractice() {
+            let answered = 0; for(let i=1; i<=10; i++) { if(document.getElementById(`ans-${i}`).textContent !== "??") answered++; }
+            if (answered === 10) finishPractice();
+            else { document.getElementById('guideContent').innerHTML = `<div class="flex flex-col items-center justify-center h-full py-12 text-center"><p class="text-lg font-black text-indigo-300 uppercase tracking-widest leading-relaxed">Sila tekan segmen roda<br>seterusnya...</p></div>`; document.getElementById('guideActions').innerHTML = ""; }
+        }
+        function finishPractice() {
+            resetTimer(); const n = activeStudent ? activeStudent.name : "Murid", k = activeStudent ? activeStudent.kls : "Tiada", data = `STUDENT:${n}|CLASS:${k}|SCORE:${score.correct}/${score.total}`;
+            const qr = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(data)}`;
+            document.getElementById('guideContent').innerHTML = `<div class="text-center animate-fade-up"><h2 class="text-2xl font-black text-indigo-900 mb-6 uppercase tracking-tighter">Sesi Tamat!</h2><div class="flex justify-center mb-6"><img src="${qr}" class="w-40 h-40 border-8 border-white shadow-xl rounded-3xl"></div><div class="text-left bg-indigo-50 p-5 rounded-3xl border-2 border-indigo-100"><p class="text-lg font-black text-indigo-950 leading-tight">${n}</p><p class="font-bold text-indigo-500 text-xs uppercase mt-1">${k}</p></div></div>`;
+            document.getElementById('guideActions').innerHTML = `<button onclick="resetApp()" class="w-full py-4 bg-indigo-700 text-white rounded-2xl font-black shadow-lg">Mula Latihan Baru</button>`;
         }
         function createArcPath(x,y,r1,r2,a1,a2) {
             const rad1=a1*Math.PI/180, rad2=a2*Math.PI/180;
@@ -1002,107 +766,43 @@
         }
         function startTimer() { if(!timerInterval) { const s = Date.now(); timerInterval = setInterval(() => { const t = Math.floor((Date.now()-s)/1000); document.getElementById('timerDisplay').innerText = t; }, 1000); } }
         function resetTimer() { clearInterval(timerInterval); timerInterval=null; if(document.getElementById('timerDisplay')) document.getElementById('timerDisplay').innerText="00:00"; }
-        function resetApp() { currentSifir=null; score={correct:0,total:0}; resetTimer(); if(document.getElementById('wheelWrapper')) document.getElementById('wheelWrapper').innerHTML = `<span class="text-gray-300 font-black">Pilih Sifir</span>`; }
-        
+        function resetApp() { 
+            currentSifir = null; score = { correct: 0, total: 0 }; document.getElementById('currentScore').innerText = "0/0"; resetTimer();
+            document.getElementById('wheelWrapper').innerHTML = `<span class="text-indigo-100 font-black text-center p-8 text-xl uppercase tracking-widest leading-tight">Sila Pilih Sifir</span>`;
+            document.getElementById('guideContent').innerHTML = `<div class="text-center py-12"><div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><h2 class="text-2xl font-black text-pdp-primary mb-3">Panduan PdP</h2><p class="text-sm text-gray-500 font-bold leading-relaxed px-4">Sila pilih murid dan sifir di bahagian kiri untuk memulakan sesi PdP secara interaktif.</p></div>`;
+            document.getElementById('guideActions').innerHTML = "";
+            document.querySelectorAll('.sifir-btn').forEach(b => b.classList.remove('border-indigo-600', 'bg-indigo-50', 'text-indigo-900', 'ring-2', 'ring-indigo-200'));
+            document.querySelectorAll('[id^="mnl-"]').forEach(m => m.classList.remove('mnl-active'));
+        }
         function openStudentManager() { document.getElementById('studentModal').classList.remove('hidden'); renderStudentList(); renderGradebook(); }
         function closeStudentManager() { document.getElementById('studentModal').classList.add('hidden'); }
-        
-        function openEntryModal() { document.getElementById('entryModal').classList.remove('hidden'); if(activeStudent) document.getElementById('entryStudentInfo').innerText = `${activeStudent.name} (${activeStudent.kls})`; const g = document.getElementById('entrySifirGrid'); g.innerHTML=""; for(let i=1; i<=9; i++) { const b = document.createElement('button'); b.className = `p-2 rounded font-black border ${scanTargetSifir==i?'bg-indigo-600 text-white':'bg-white text-gray-600'}`; b.innerText=i; b.onclick=()=>{scanTargetSifir=i;openEntryModal();}; g.appendChild(b); } }
-        function closeEntryModal() { document.getElementById('entryModal').classList.add('hidden'); }
-        function saveEntry() { const sc=document.getElementById('entryScore').value; const tm=document.getElementById('entryTime').value; if(!sc||!tm) return; records.push({name:activeStudent.name,kls:activeStudent.kls,sifir:scanTargetSifir,score:sc,time:tm,date:new Date().toLocaleDateString()}); localStorage.setItem('krd_records_v3', JSON.stringify(records)); updateStudentUI(); renderGradebook(); closeEntryModal(); }
-
-        function generateTestByClass() {
-            const cls = document.getElementById('printClassSelect').value;
-            const target = cls === 'all' ? students : students.filter(s => s.kls === cls);
-            if(!target.length) return alert("Tiada data.");
-            
-            const p = document.getElementById('printArea'); 
-            p.innerHTML = '';
-            
-            target.forEach((s, index) => {
-                const qrId = `qrcode-${index}`;
-                // Use a single A4 container
-                const d = document.createElement('div');
-                d.className = 'page-break bg-white p-8';
-                
-                let content = `
-                <div class="border-4 border-gray-800 p-6 rounded-3xl h-full flex flex-col relative">
-                    <div class="flex justify-between items-start border-b-4 border-black pb-4 mb-4">
-                        <div>
-                            <h1 class="text-4xl font-black mb-1 uppercase tracking-tighter">CIRCULOX</h1>
-                            <p class="text-xl font-bold uppercase">${s.name}</p>
-                            <p class="text-lg font-bold uppercase text-gray-600">${s.kls}</p>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <div id="${qrId}" class="bg-white p-1 border-2 border-black"></div>
-                            <p class="text-[10px] font-black mt-1 uppercase">Imbas Untuk Mula</p>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-4 flex-grow">
-                `;
-                
-                // Add Sifir 2-9
-                for(let i=2; i<=9; i++) {
-                    content += `
-                    <div class="border-2 border-gray-400 rounded-2xl p-2 flex flex-col items-center justify-center relative">
-                        <p class="absolute top-1 left-2 font-black text-lg text-gray-300">x${i}</p>
-                        <svg viewBox="0 0 400 400" class="w-32 h-32">
-                            ${Array.from({length:10}, (_, j) => {
-                                const a = j*36-90, rad = ((a+18)*Math.PI)/180;
-                                return `<path d="${createArcPath(200,200,90,180,a,a+36)}" fill="none" stroke="black" stroke-width="6" />
-                                        <text x="${200+Math.cos(rad)*65}" y="${200+Math.sin(rad)*65}" text-anchor="middle" font-size="28" font-weight="900" alignment-baseline="middle">${j+1}</text>
-                                        <text x="${200+Math.cos(rad)*112}" y="${200+Math.sin(rad)*115}" text-anchor="middle" font-size="24" fill="#ccc">__</text>`;
-                            }).join('')}
-                            <circle cx="200" cy="200" r="45" fill="none" stroke="black" stroke-width="6" />
-                        </svg>
-                    </div>`;
-                }
-                
-                content += `
-                    </div>
-                    <div class="mt-4 pt-2 border-t-4 border-black flex justify-between font-black text-lg">
-                        <p>SKOR: _____ / 80</p>
-                        <p>MASA: _________</p>
-                    </div>
-                </div>`;
-                
-                d.innerHTML = content;
-                p.appendChild(d);
+        function addStudent() { const n=document.getElementById('addName').value, k=document.getElementById('addClass').value; if(n&&k) { students.push({name:n,kls:k}); localStorage.setItem('krd_students_v3',JSON.stringify(students)); updateClassDropdown(); renderStudentList(); document.getElementById('addName').value=''; document.getElementById('addClass').value=''; } }
+        function renderStudentList() { const l=document.getElementById('studentListContainer'); l.innerHTML=''; [...students].reverse().forEach((s,i)=>{ l.innerHTML+=`<div class="flex justify-between p-2 border-b"><span>${s.name} (${s.kls})</span><button onclick="removeStudent(${students.length-1-i})" class="text-red-500">x</button></div>`; }); }
+        function removeStudent(i) { students.splice(i,1); localStorage.setItem('krd_students_v3',JSON.stringify(students)); renderStudentList(); updateClassDropdown(); }
+        function renderGradebook() { const l=document.getElementById('gradebookList'); l.innerHTML=''; [...records].reverse().forEach(r=>{ l.innerHTML+=`<div class="p-2 border-b text-xs"><b>${r.name}</b> (${r.kls}): Sifir ${r.sifir}, Skor ${r.score}, ${r.time}s</div>`; }); }
+        function clearAllData() { if(confirm("Padam?")) { students=[]; records=[]; localStorage.clear(); updateClassDropdown(); renderStudentList(); renderGradebook(); } }
+        function addBulkStudents() { const raw=document.getElementById('bulkInput').value; if(raw) { raw.split('\n').forEach(l=>{const p=l.split(','); if(p.length>=2) students.push({name:p[0].trim(),kls:p[1].trim().toUpperCase()});}); localStorage.setItem('krd_students_v3',JSON.stringify(students)); updateClassDropdown(); renderStudentList(); document.getElementById('bulkInput').value=''; } }
+        function updateClassDropdown() { const d=document.getElementById('classDropdown'), p=document.getElementById('printClassSelect'), u=[...new Set(students.map(s=>s.kls))].sort(); const h='<option value="">Pilih...</option>'+u.map(c=>`<option value="${c}">${c}</option>`).join(''); d.innerHTML=h; p.innerHTML='<option value="all">SEMUA</option>'+u.map(c=>`<option value="${c}">${c}</option>`).join(''); }
+        function loadStudentsByClass() { const k=document.getElementById('classDropdown').value, d=document.getElementById('studentDropdown'); if(k) d.innerHTML='<option value="">Pilih...</option>'+students.filter(s=>s.kls===k).map(s=>`<option value="${s.name}">${s.name}</option>`).join(''); else d.innerHTML='<option value="">Pilih...</option>'; }
+        function selectStudentFromList() { const n=document.getElementById('studentDropdown').value, k=document.getElementById('classDropdown').value; activeStudent=students.find(s=>s.name===n&&s.kls===k); updateStudentUI(); }
+        function updateStudentUI() { if(activeStudent) { document.getElementById('studentDetail').classList.remove('hidden'); document.getElementById('noStudentText').classList.add('hidden'); document.getElementById('activeStudentInfo').classList.remove('hidden'); document.getElementById('dispName').innerText=activeStudent.name; document.getElementById('dispClass').innerText=activeStudent.kls; } }
+        function generateTestByClass() { 
+            const c=document.getElementById('printClassSelect').value, t=c==='all'?students:students.filter(s=>s.kls===c); if(!t.length) return alert("Tiada data");
+            const p=document.getElementById('printArea'); p.innerHTML='';
+            t.forEach((s,i)=>{
+                const d=document.createElement('div'); d.className='page-break p-10 border-4 m-4';
+                d.innerHTML=`<div class="flex justify-between border-b-4 pb-4 mb-4"><div><h1 class="text-4xl font-black">CIRCULOX</h1><p class="text-xl font-bold">${s.name}</p><p>${s.kls}</p></div><div id="qr-${i}"></div></div><div class="grid grid-cols-2 gap-4">${Array.from({length:8},(_,j)=>`<div class="border-2 p-2 flex flex-col items-center"><p class="font-black text-lg">x${j+2}</p><div class="h-32 w-32 border rounded-full"></div></div>`).join('')}</div>`;
+                p.appendChild(d); setTimeout(()=>{new QRCode(document.getElementById(`qr-${i}`),{text:`LOGIN:${s.name}|${s.kls}`,width:80,height:80});},100);
             });
-            
-            // Generate QR Codes with qrcode.js
-            setTimeout(() => {
-                target.forEach((s, index) => {
-                    const el = document.getElementById(`qrcode-${index}`);
-                    if(el) {
-                        new QRCode(el, {
-                            text: `LOGIN:${s.name}|${s.kls}`,
-                            width: 80,
-                            height: 80,
-                            correctLevel: QRCode.CorrectLevel.L
-                        });
-                    }
-                });
-                // Delay print to ensure images render
-                setTimeout(() => window.print(), 800);
-            }, 100);
+            setTimeout(()=>window.print(),1000);
         }
-
-        // Database
-        function exportDatabase() {
-            const data = { students, records, timestamp: new Date().toISOString() };
-            const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data)],{type:'application/json'}));
-            a.download = "circulox_db.json"; document.body.appendChild(a); a.click(); a.remove();
-        }
+        function openEntryModal() { document.getElementById('entryModal').classList.remove('hidden'); if(activeStudent) document.getElementById('entryStudentInfo').innerText=`${activeStudent.name} (${activeStudent.kls})`; const g=document.getElementById('entrySifirGrid'); g.innerHTML=''; for(let i=1;i<=9;i++) { const b=document.createElement('button'); b.className=`p-2 border rounded ${scanTargetSifir==i?'bg-indigo-600 text-white':'bg-white'}`; b.innerText=i; b.onclick=()=>{scanTargetSifir=i;openEntryModal();}; g.appendChild(b); } }
+        function closeEntryModal() { document.getElementById('entryModal').classList.add('hidden'); }
+        function saveEntry() { const s=document.getElementById('entryScore').value, t=document.getElementById('entryTime').value; if(s&&t) { records.push({name:activeStudent.name,kls:activeStudent.kls,sifir:scanTargetSifir,score:s,time:t,date:new Date().toLocaleDateString()}); localStorage.setItem('krd_records_v3',JSON.stringify(records)); renderGradebook(); closeEntryModal(); } }
+        function exportDatabase() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify({students,records})],{type:'application/json'})); a.download='circulox.json'; a.click(); }
         function triggerImport() { document.getElementById('importFile').click(); }
-        function importDatabase(input) {
-            const f = input.files[0]; if(!f) return;
-            const r = new FileReader(); r.onload=e=>{
-                try { const d=JSON.parse(e.target.result); if(d.students){ students=d.students; records=d.records||[]; localStorage.setItem('krd_students_v3',JSON.stringify(students)); localStorage.setItem('krd_records_v3',JSON.stringify(records)); updateClassDropdown(); renderStudentList(); renderGradebook(); alert("Berjaya."); } } catch(e){alert("Ralat fail.");}
-            }; r.readAsText(f);
-        }
-
+        function importDatabase(i) { const f=i.files[0]; if(f) { const r=new FileReader(); r.onload=e=>{ try { const d=JSON.parse(e.target.result); students=d.students; records=d.records||[]; localStorage.setItem('krd_students_v3',JSON.stringify(students)); localStorage.setItem('krd_records_v3',JSON.stringify(records)); updateClassDropdown(); renderStudentList(); renderGradebook(); alert("Berjaya"); } catch(x){alert("Gagal");} }; r.readAsText(f); } }
+        
         // Init
         updateClassDropdown(); renderStudentList(); renderGradebook(); resetApp();
     </script>
