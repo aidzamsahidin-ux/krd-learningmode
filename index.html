@@ -14,8 +14,9 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <!-- PeerJS untuk sambungan Phone-to-LCD -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <!-- Tambah QRCode.js untuk penjanaan QR offline yang stabil -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap');
@@ -80,7 +81,10 @@
 
         @media print {
             body > *:not(#printArea) { display: none !important; }
-            #printArea { display: block !important; }
+            #printArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; background: white; z-index: 9999; }
+            .page-break { page-break-after: always; display: block; min-height: 100vh; position: relative; padding: 20px; }
+            /* Paksa cetakan background graphics */
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
 
         #reader { width: 100% !important; border-radius: 1.5rem; overflow: hidden; }
@@ -240,17 +244,29 @@
     <div id="lcdModal" class="fixed inset-0 bg-indigo-950 hidden z-[100] flex flex-col items-center justify-center p-6 text-center">
         <h2 class="text-white text-3xl font-black uppercase tracking-[0.3em] mb-10 opacity-80">Cabaran CirculoX</h2>
         <div class="lcd-timer font-mono" id="lcdTimerDisplay">10:00</div>
-        <div class="mt-12 flex gap-5">
-            <button onclick="startLcdCountdown()" id="lcdStartBtn" class="px-12 py-5 bg-emerald-600 text-white rounded-2xl font-black text-2xl shadow-2xl">MULA</button>
+        
+        <!-- Timer Controls -->
+        <div class="flex items-center justify-center gap-4 mb-8">
+            <select id="lcdTimeSelect" class="bg-indigo-900 text-white border-2 border-indigo-700 rounded-xl px-4 py-2 font-bold text-lg outline-none cursor-pointer">
+                <option value="300">5 Minit</option>
+                <option value="600" selected>10 Minit</option>
+                <option value="900">15 Minit</option>
+                <option value="custom">Custom...</option>
+            </select>
+            <input type="number" id="lcdCustomTime" placeholder="Minit" class="hidden w-24 bg-white text-indigo-900 border-2 border-indigo-700 rounded-xl px-4 py-2 font-bold text-lg outline-none" min="1">
+        </div>
+
+        <div class="flex gap-5">
+            <button onclick="startLcdCountdown()" id="lcdStartBtn" class="px-12 py-5 bg-emerald-600 text-white rounded-2xl font-black text-2xl shadow-2xl hover:scale-105 transition-all">MULA</button>
             <button onclick="resetLcdCountdown()" class="px-12 py-5 bg-indigo-800 text-indigo-100 rounded-2xl font-black text-2xl">RESET</button>
         </div>
         <div class="mt-16 py-4 px-10 bg-indigo-900/50 rounded-full border border-indigo-700">
             <p id="lcdStudentName" class="text-indigo-200 text-3xl font-black uppercase tracking-widest truncate max-w-full">SEMUA MURID</p>
         </div>
-        <button onclick="closeLCDMode()" class="absolute top-6 right-6 text-indigo-400 hover:text-white text-6xl font-black">×</button>
+        <button onclick="closeLCDMode()" class="absolute top-6 right-6 text-indigo-400 hover:text-white text-6xl font-black transition-colors">×</button>
     </div>
 
-    <!-- Database & Scanner Modals (Sama seperti sebelum) -->
+    <!-- Database & Scanner Modals -->
     <div id="studentModal" class="fixed inset-0 bg-black/90 backdrop-blur-xl hidden z-50 flex flex-col items-center justify-center p-4">
         <div class="glass-card w-full max-w-6xl p-6 md:p-8 rounded-[3rem] max-h-[95vh] flex flex-col overflow-hidden">
             <div class="flex justify-between items-center mb-4 px-2">
@@ -322,7 +338,6 @@
         const remoteTargetId = urlParams.get('remote');
 
         if(remoteTargetId) {
-            // Auto-start remote mode
             setTimeout(() => startRemoteMode(remoteTargetId), 1000);
         }
 
@@ -344,15 +359,15 @@
                 document.getElementById('synergyLoading').classList.add('hidden');
                 
                 if (remoteTargetId) {
-                    // Do nothing, handled by startRemoteMode
+                    // Do nothing
                 } else {
-                    // Host Mode (LCD)
                     document.getElementById('synergyHostView').classList.remove('hidden');
                     const connUrl = window.location.href.split('?')[0] + '?remote=' + id;
-                    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(connUrl)}`;
-                    document.getElementById('synergyQr').src = qrUrl;
+                    // QR for PeerJS connection
+                    const qrEl = document.getElementById('synergyQr');
+                    // Use QR Code API for Synergy as it needs internet anyway
+                    qrEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(connUrl)}`;
                     
-                    // Listen for connection
                     peer.on('connection', (c) => {
                         conn = c;
                         setupConnection();
@@ -390,10 +405,8 @@
         function sendLeaderboardToLCD() {
             if(!conn) return alert("Tiada sambungan ke LCD.");
             
-            // Generate Top 5 from local records
             const sortedRecords = [...records]
                 .sort((a,b) => {
-                    // Sort by Score (Desc), then Time (Asc)
                     if (b.score !== a.score) return b.score - a.score;
                     return a.time - b.time;
                 })
@@ -599,10 +612,85 @@
         function startTimer() { if(!timerInterval) { const s = Date.now(); timerInterval = setInterval(() => { const t = Math.floor((Date.now()-s)/1000); document.getElementById('timerDisplay').innerText = t; }, 1000); } }
         function resetTimer() { clearInterval(timerInterval); timerInterval=null; if(document.getElementById('timerDisplay')) document.getElementById('timerDisplay').innerText="00:00"; }
         function resetApp() { currentSifir=null; score={correct:0,total:0}; resetTimer(); if(document.getElementById('wheelWrapper')) document.getElementById('wheelWrapper').innerHTML = `<span class="text-gray-300 font-black">Pilih Sifir</span>`; }
-        function openLCDMode() { document.getElementById('lcdModal').classList.remove('hidden'); resetLcdCountdown(); }
+        function openLCDMode() { 
+            document.getElementById('lcdModal').classList.remove('hidden'); 
+            resetLcdCountdown(); 
+        }
         function closeLCDMode() { document.getElementById('lcdModal').classList.add('hidden'); }
-        function startLcdCountdown() { if(lcdCountdownInterval) return; lcdCountdownInterval = setInterval(() => { lcdTimeLeft--; document.getElementById('lcdTimerDisplay').innerText = lcdTimeLeft; if(lcdTimeLeft<=0) resetLcdCountdown(); }, 1000); }
-        function resetLcdCountdown() { clearInterval(lcdCountdownInterval); lcdCountdownInterval=null; lcdTimeLeft=600; document.getElementById('lcdTimerDisplay').innerText="10:00"; }
+        function startLcdCountdown() { 
+            if(lcdCountdownInterval) return; 
+            
+            // Handle Custom Time
+            const select = document.getElementById('lcdTimeSelect');
+            if (select.value === 'custom') {
+                const customVal = document.getElementById('lcdCustomTime').value;
+                if (!customVal || customVal <= 0) return alert("Sila masukkan masa yang sah.");
+                lcdTimeLeft = customVal * 60;
+            } else if (lcdTimeLeft <= 0 || lcdTimeLeft === 600) {
+                // If reset or default, update based on dropdown
+                lcdTimeLeft = parseInt(select.value);
+            }
+
+            document.getElementById('lcdStartBtn').innerText = "BERHENTI";
+            document.getElementById('lcdStartBtn').onclick = pauseLcdCountdown;
+
+            lcdCountdownInterval = setInterval(() => { 
+                lcdTimeLeft--; 
+                
+                const m = Math.floor(lcdTimeLeft / 60).toString().padStart(2, '0');
+                const s = (lcdTimeLeft % 60).toString().padStart(2, '0');
+                document.getElementById('lcdTimerDisplay').innerText = `${m}:${s}`;
+                
+                if(lcdTimeLeft<=0) {
+                    clearInterval(lcdCountdownInterval);
+                    lcdCountdownInterval = null;
+                    alert("MASA TAMAT!");
+                    resetLcdCountdown();
+                }
+            }, 1000); 
+        }
+        
+        function pauseLcdCountdown() {
+            clearInterval(lcdCountdownInterval);
+            lcdCountdownInterval = null;
+            document.getElementById('lcdStartBtn').innerText = "SAMBUNG";
+            document.getElementById('lcdStartBtn').onclick = startLcdCountdown;
+        }
+
+        function resetLcdCountdown() { 
+            clearInterval(lcdCountdownInterval); 
+            lcdCountdownInterval=null; 
+            
+            const select = document.getElementById('lcdTimeSelect');
+            if(select.value === 'custom') {
+                 // reset to 0 or keep input? Let's reset display to input
+                 const val = document.getElementById('lcdCustomTime').value || 10;
+                 lcdTimeLeft = val * 60;
+                 const m = Math.floor(lcdTimeLeft / 60).toString().padStart(2, '0');
+                 document.getElementById('lcdTimerDisplay').innerText = `${m}:00`;
+            } else {
+                lcdTimeLeft = parseInt(select.value);
+                const m = Math.floor(lcdTimeLeft / 60).toString().padStart(2, '0');
+                document.getElementById('lcdTimerDisplay').innerText = `${m}:00`;
+            }
+            
+            document.getElementById('lcdStartBtn').innerText = "MULA";
+            document.getElementById('lcdStartBtn').onclick = startLcdCountdown;
+        }
+
+        // Toggle custom time input
+        document.getElementById('lcdTimeSelect').addEventListener('change', function() {
+            const customInput = document.getElementById('lcdCustomTime');
+            if (this.value === 'custom') {
+                customInput.classList.remove('hidden');
+            } else {
+                customInput.classList.add('hidden');
+                lcdTimeLeft = parseInt(this.value);
+                const m = Math.floor(lcdTimeLeft / 60).toString().padStart(2, '0');
+                document.getElementById('lcdTimerDisplay').innerText = `${m}:00`;
+            }
+        });
+
         function openStudentManager() { document.getElementById('studentModal').classList.remove('hidden'); renderStudentList(); renderGradebook(); }
         function closeStudentManager() { document.getElementById('studentModal').classList.add('hidden'); }
         function toggleScanner() { 
@@ -616,13 +704,86 @@
             const cls = document.getElementById('printClassSelect').value;
             const target = cls === 'all' ? students : students.filter(s => s.kls === cls);
             if(!target.length) return alert("Tiada data.");
-            const p = document.getElementById('printArea'); p.innerHTML = '';
-            target.forEach(s => {
-                const d = document.createElement('div'); d.className = 'page-break p-10';
-                d.innerHTML = `<h1 class="text-4xl font-black mb-4">CIRCULOX</h1><p class="text-xl font-bold">${s.name} (${s.kls})</p><div class="grid grid-cols-2 gap-4 mt-8">${Array.from({length:8},(_,i)=>`<div class="border-2 border-black h-40 flex items-center justify-center font-black text-2xl">SIFIR ${i+2}</div>`).join('')}</div>`;
-                p.appendChild(d);
+            
+            const p = document.getElementById('printArea'); 
+            p.innerHTML = '';
+            
+            // Wait for DOM updates then print
+            // We need to render QR codes one by one
+            
+            let htmlContent = '';
+            
+            target.forEach((s, index) => {
+                // Generate unique ID for QR container
+                const qrId = `qrcode-${index}`;
+                
+                htmlContent += `
+                <div class="page-break p-10 border-4 border-gray-200 m-4 rounded-3xl">
+                    <div class="flex justify-between items-start border-b-4 border-black pb-6 mb-8">
+                        <div>
+                            <h1 class="text-5xl font-black mb-2 tracking-tighter">CIRCULOX</h1>
+                            <p class="text-2xl font-bold uppercase">${s.name}</p>
+                            <p class="text-xl text-gray-600 font-bold uppercase">${s.kls}</p>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div id="${qrId}" class="border-4 border-black p-2 bg-white"></div>
+                            <p class="text-xs font-bold mt-1">SCAN UNTUK REKOD</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-8">
+                `;
+                
+                // Add Sifir 2-9 grids
+                for(let i=2; i<=9; i++) {
+                    const wheelHtml = `
+                    <div class="flex flex-col items-center border-2 border-gray-300 rounded-3xl p-4">
+                        <div class="relative w-40 h-40">
+                            <svg viewBox="0 0 400 400" class="w-full h-full">
+                                <!-- Paths for wheel -->
+                                ${Array.from({length:10}, (_, j) => {
+                                    const a = j*36-90, rad = ((a+18)*Math.PI)/180;
+                                    return `<path d="${createArcPath(200,200,85,175,a,a+36)}" fill="none" stroke="black" stroke-width="4" />
+                                            <text x="${200+Math.cos(rad)*65}" y="${200+Math.sin(rad)*65}" text-anchor="middle" font-size="24" font-weight="900" alignment-baseline="middle">${j+1}</text>
+                                            <text x="${200+Math.cos(rad)*112}" y="${200+Math.sin(rad)*115}" text-anchor="middle" font-size="20" fill="#ccc">____</text>`;
+                                }).join('')}
+                                <circle cx="200" cy="200" r="40" fill="none" stroke="black" stroke-width="4" />
+                                <text x="200" y="208" text-anchor="middle" font-size="30" font-weight="900">${i}×</text>
+                            </svg>
+                        </div>
+                        <p class="font-black text-xl mt-2">SIFIR ${i}</p>
+                    </div>`;
+                    htmlContent += wheelHtml;
+                }
+                
+                htmlContent += `
+                    </div>
+                    <div class="mt-8 pt-4 border-t-4 border-black flex justify-between font-black text-xl">
+                        <p>TARIKH: ____________</p>
+                        <p>SKOR: _____ / 80</p>
+                        <p>MASA: _________</p>
+                    </div>
+                </div>`;
             });
-            window.print();
+            
+            p.innerHTML = htmlContent;
+            
+            // Generate QRs after HTML insertion
+            setTimeout(() => {
+                target.forEach((s, index) => {
+                    const qrContainer = document.getElementById(`qrcode-${index}`);
+                    if(qrContainer) {
+                        new QRCode(qrContainer, {
+                            text: `LOGIN:${s.name}|${s.kls}`,
+                            width: 100,
+                            height: 100
+                        });
+                    }
+                });
+                
+                // Small delay for QR rendering before print
+                setTimeout(() => window.print(), 500);
+            }, 100);
         }
 
         // Init
