@@ -34,7 +34,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Desktop Optimization */
         @media (min-width: 1024px) {
             body { height: 100vh; overflow: hidden; }
         }
@@ -70,7 +69,7 @@
         .sector-highlight { stroke: var(--accent); stroke-width: 5px; fill: #e0e7ff !important; }
 
         .lcd-timer {
-            font-size: clamp(5rem, 18vw, 16rem); line-height: 0.9; font-weight: 900; color: #ffffff;
+            font-size: clamp(5rem, 15vw, 14rem); line-height: 0.9; font-weight: 900; color: #ffffff;
             text-shadow: 0 4px 30px rgba(0,0,0,0.3); letter-spacing: -0.05em;
         }
 
@@ -84,7 +83,7 @@
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
 
-        #reader { width: 100% !important; border-radius: 1.5rem; overflow: hidden; }
+        #reader, #remoteScannerVideo { width: 100% !important; border-radius: 1.5rem; overflow: hidden; }
         
         .leaderboard-item { transition: all 0.5s ease-out; transform: translateY(20px); opacity: 0; }
         .leaderboard-item.show { transform: translateY(0); opacity: 1; }
@@ -241,9 +240,10 @@
     </div>
 
     <!-- LCD / Countdown Mode (Host) -->
-    <div id="lcdModal" class="fixed inset-0 bg-indigo-950 hidden z-[100] flex flex-col items-center justify-center p-6 text-center">
-        <!-- Top Bar -->
-        <div class="absolute top-6 left-6 right-6 flex justify-between items-start">
+    <div id="lcdModal" class="fixed inset-0 bg-indigo-950 hidden z-[100] flex flex-col p-6 text-center">
+        <!-- Header Section (Top Bar) -->
+        <div class="flex justify-between items-start w-full mb-4 shrink-0">
+            <!-- Connection Status -->
             <div class="text-left bg-indigo-900/50 p-4 rounded-2xl backdrop-blur-sm border border-indigo-700 flex items-center gap-4 cursor-pointer hover:bg-indigo-800/50 transition-colors" onclick="openSynergyModal()">
                 <div class="bg-white/10 p-2 rounded-lg w-12 h-12 flex items-center justify-center text-2xl">📡</div>
                 <div>
@@ -252,6 +252,7 @@
                 </div>
             </div>
             
+            <!-- Controls -->
             <div class="flex flex-col items-end gap-2">
                 <button onclick="closeLCDMode()" class="text-indigo-400 hover:text-white text-4xl font-black transition-colors">×</button>
                 <div class="flex items-center gap-2">
@@ -263,38 +264,55 @@
             </div>
         </div>
 
-        <!-- Timer Center -->
-        <div class="flex flex-col items-center justify-center mt-10 w-full max-w-4xl">
-            <h2 class="text-indigo-300 text-2xl md:text-4xl font-black uppercase tracking-[0.3em] mb-4 opacity-80 animate-pulse">Masa Berjalan</h2>
-            <div class="lcd-timer font-mono leading-none" id="lcdTimerDisplay">10:00</div>
+        <!-- Content Container (Timer + Leaderboard) -->
+        <div class="flex flex-col flex-grow items-center justify-center w-full overflow-hidden gap-6">
             
-            <div class="mt-8 flex items-center gap-4 bg-indigo-900/40 p-2 rounded-2xl backdrop-blur-sm">
-                <select id="lcdTimeSelect" class="bg-transparent text-white text-xl font-black outline-none cursor-pointer px-4 py-2 border-r border-indigo-700">
-                    <option value="300" class="bg-indigo-900">5 Minit</option>
-                    <option value="600" class="bg-indigo-900" selected>10 Minit</option>
-                    <option value="900" class="bg-indigo-900">15 Minit</option>
-                    <option value="custom" class="bg-indigo-900">Custom...</option>
-                </select>
-                <input type="number" id="lcdCustomTime" class="w-20 bg-white/10 text-white font-black text-center rounded-lg px-2 py-1 outline-none hidden border border-white/20" placeholder="Min">
+            <!-- Timer Section -->
+            <div class="flex flex-col items-center justify-center w-full max-w-4xl shrink-0">
+                <h2 class="text-indigo-300 text-2xl md:text-4xl font-black uppercase tracking-[0.3em] mb-2 opacity-80 animate-pulse">Masa Berjalan</h2>
+                <div class="lcd-timer font-mono leading-none" id="lcdTimerDisplay">10:00</div>
                 
-                <div class="flex gap-2">
-                    <button onclick="startLcdCountdown()" id="lcdStartBtn" class="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-lg transition-all shadow-lg active:scale-95">MULA</button>
-                    <button onclick="resetLcdCountdown()" class="px-6 py-3 bg-indigo-700 hover:bg-indigo-600 text-indigo-100 rounded-xl font-black text-lg transition-all">RESET</button>
+                <div class="mt-6 flex items-center gap-4 bg-indigo-900/40 p-2 rounded-2xl backdrop-blur-sm">
+                    <select id="lcdTimeSelect" class="bg-transparent text-white text-xl font-black outline-none cursor-pointer px-4 py-2 border-r border-indigo-700">
+                        <option value="300" class="bg-indigo-900">5 Minit</option>
+                        <option value="600" class="bg-indigo-900" selected>10 Minit</option>
+                        <option value="900" class="bg-indigo-900">15 Minit</option>
+                        <option value="custom" class="bg-indigo-900">Custom...</option>
+                    </select>
+                    <input type="number" id="lcdCustomTime" class="w-20 bg-white/10 text-white font-black text-center rounded-lg px-2 py-1 outline-none hidden border border-white/20" placeholder="Min">
+                    
+                    <div class="flex gap-2">
+                        <button onclick="startLcdCountdown()" id="lcdStartBtn" class="px-8 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-black text-lg transition-all shadow-lg active:scale-95">MULA</button>
+                        <button onclick="resetLcdCountdown()" class="px-6 py-3 bg-indigo-700 hover:bg-indigo-600 text-indigo-100 rounded-xl font-black text-lg transition-all">RESET</button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Live Leaderboard -->
-        <div class="absolute bottom-6 left-6 right-6 h-1/3 bg-indigo-900/30 rounded-[2rem] border border-indigo-800 backdrop-blur-md overflow-hidden flex flex-col p-6">
-            <div class="flex justify-between items-center mb-4 border-b border-indigo-700/50 pb-2">
-                <h3 class="text-white font-black text-xl uppercase tracking-widest flex items-center gap-2">
-                    🏆 Ranking Terpantas <span id="leaderboardCount" class="bg-indigo-600 px-2 py-0.5 rounded text-xs">0</span>
-                </h3>
+            <!-- Live Leaderboard Section (Flex Grow to take remaining space) -->
+            <div class="w-full max-w-6xl bg-indigo-900/30 rounded-[2rem] border border-indigo-800 backdrop-blur-md overflow-hidden flex flex-col p-6 flex-grow min-h-0">
+                <div class="flex justify-between items-center mb-2 border-b border-indigo-700/50 pb-2 shrink-0">
+                    <h3 class="text-white font-black text-xl uppercase tracking-widest flex items-center gap-2">
+                        🏆 Ranking Terpantas <span id="leaderboardCount" class="bg-indigo-600 px-2 py-0.5 rounded text-xs">0</span>
+                    </h3>
+                </div>
+                <!-- Scrollable List -->
+                <div id="lcdLeaderboardList" class="flex-grow overflow-y-auto space-y-2 pr-2 custom-scroll">
+                    <p class="text-indigo-400/50 font-bold text-center mt-10 uppercase tracking-widest text-sm">Menunggu data dari telefon guru...</p>
+                </div>
             </div>
-            <div id="lcdLeaderboardList" class="flex-grow overflow-y-auto space-y-2 pr-2 custom-scroll">
-                <p class="text-indigo-400/50 font-bold text-center mt-10 uppercase tracking-widest text-sm">Menunggu data dari telefon guru...</p>
-            </div>
+
         </div>
+    </div>
+
+    <!-- Remote Scanner Mode (Teacher Phone View) -->
+    <div id="remoteScannerModal" class="fixed inset-0 bg-gray-900 hidden z-[120] flex flex-col items-center justify-center p-6 text-center">
+        <h2 class="text-2xl font-black text-white mb-4 uppercase tracking-widest text-emerald-400 animate-pulse">• LIVE CONNECTION •</h2>
+        <div class="w-full max-w-sm bg-black rounded-3xl overflow-hidden border-4 border-emerald-500 relative shadow-2xl">
+            <div id="remoteScannerVideo" class="w-full h-64 bg-gray-800"></div>
+            <div class="absolute top-4 left-4 bg-black/50 px-3 py-1 rounded-full text-xs font-bold text-white">MOD PENGIMBAS GURU</div>
+        </div>
+        <p class="mt-6 text-gray-400 font-bold text-sm px-6">Imbas kertas murid yang telah siap. Data akan dihantar terus ke skrin LCD.</p>
+        <button onclick="stopRemoteScanner()" class="mt-8 py-4 px-12 bg-red-600 text-white rounded-2xl font-black text-xl shadow-lg active:scale-95 transition-transform">TUTUP</button>
     </div>
 
     <!-- Database & Scanner Modals -->
@@ -332,9 +350,9 @@
     </div>
 
     <div id="scannerModal" class="fixed inset-0 bg-black/95 backdrop-blur-md hidden z-50 flex flex-col items-center justify-center p-6 text-center">
-        <h2 class="text-3xl font-black text-white mb-8 uppercase tracking-widest">Imbas Kod Kertas</h2>
-        <div id="reader" class="rounded-[2rem] overflow-hidden w-full max-w-sm border-4 border-indigo-600 bg-white shadow-2xl"></div>
-        <button onclick="toggleScanner()" class="mt-10 py-4 px-14 bg-white/10 text-white border border-white/20 rounded-2xl font-black text-lg hover:bg-white/20">Tutup Kamera</button>
+        <h2 class="text-3xl font-black text-white mb-8 uppercase tracking-widest">Imbas Kod</h2>
+        <div id="reader" class="rounded-[2rem] overflow-hidden w-full max-w-sm border-4 border-indigo-600 bg-white"></div>
+        <button onclick="toggleScanner()" class="mt-10 py-4 px-14 bg-white/10 text-white border border-white/20 rounded-2xl font-black text-lg">Tutup</button>
     </div>
 
     <div id="entryModal" class="fixed inset-0 bg-black/70 hidden z-[60] flex items-center justify-center p-4">
@@ -344,10 +362,10 @@
             <div class="space-y-8">
                 <div><label class="block text-[10px] font-black text-gray-400 uppercase mb-4 text-left pl-1">Sifir</label><div class="grid grid-cols-5 gap-2" id="entrySifirGrid"></div></div>
                 <div class="grid grid-cols-2 gap-6">
-                    <div><label class="block text-[10px] font-black text-gray-400 uppercase mb-3 text-left pl-1">Betul (/10)</label><input type="number" id="entryScore" min="0" max="10" class="w-full px-5 py-4 rounded-2xl border-2 border-indigo-50 bg-indigo-50 font-black text-4xl text-center outline-none focus:border-indigo-500"></div>
-                    <div><label class="block text-[10px] font-black text-gray-400 uppercase mb-3 text-left pl-1">Masa (Saat)</label><input type="number" id="entryTime" placeholder="45" class="w-full px-5 py-4 rounded-2xl border-2 border-indigo-50 bg-indigo-50 font-black text-4xl text-center outline-none focus:border-indigo-500"></div>
+                    <div><label class="block text-[10px] font-black text-gray-400 uppercase mb-3 text-left pl-1">Betul</label><input type="number" id="entryScore" min="0" max="10" class="w-full px-5 py-4 rounded-2xl border-2 border-indigo-50 bg-indigo-50 font-black text-4xl text-center outline-none"></div>
+                    <div><label class="block text-[10px] font-black text-gray-400 uppercase mb-3 text-left pl-1">Masa</label><input type="number" id="entryTime" placeholder="45" class="w-full px-5 py-4 rounded-2xl border-2 border-indigo-50 bg-indigo-50 font-black text-4xl text-center outline-none"></div>
                 </div>
-                <button onclick="saveEntry()" class="w-full py-5 bg-indigo-700 text-white rounded-2xl font-black text-xl shadow-xl">Simpan</button>
+                <button onclick="saveEntry()" class="w-full py-5 bg-indigo-700 text-white rounded-2xl font-black text-xl">Simpan</button>
                 <button onclick="closeEntryModal()" class="w-full py-2 text-gray-400 font-bold uppercase text-[10px]">Batal</button>
             </div>
         </div>
@@ -365,6 +383,7 @@
         let conn = null;
         let myPeerId = null;
         let liveLeaderboard = [];
+        let remoteScannerHtml5QrCode = null;
         let isConnected = false;
 
         // --- Init State ---
@@ -429,8 +448,6 @@
                 
                 const lcdStatus = document.getElementById('lcdRemoteStatus');
                 if(lcdStatus) lcdStatus.innerText = `Menunggu (${code})`;
-                
-                // Keep modal open to show code
             });
             
             peer.on('connection', (c) => {
@@ -491,22 +508,22 @@
             } else {
                 // Client: Auto open scanner for convenience
                 alert("Sambungan berjaya! Telefon kini berfungsi sebagai pengimbas remote.");
-                // Ensure student list is synced if possible, or just send raw data
+                startRemoteScanner();
             }
         }
 
         // Handle Entry (LCD)
         function handleRaceEntry(payload) {
-            // Calculate time
+            // Calculate elapsed time from countdown
             const selectTime = document.getElementById('lcdTimeSelect').value;
             let initialTime = 600;
+            
             if (selectTime === 'custom') {
                initialTime = (document.getElementById('lcdCustomTime').value || 10) * 60;
             } else {
                initialTime = parseInt(selectTime);
             }
             
-            // If timer stopped/not started, assume 00:00 or current time
             const elapsed = initialTime - lcdTimeLeft;
             const minutes = Math.floor(elapsed / 60);
             const seconds = elapsed % 60;
@@ -561,7 +578,73 @@
             updateLCDLeaderboardUI();
         }
 
-        // --- Scanner Logic (Modified) ---
+        function openLCDMode() {
+            document.getElementById('lcdModal').classList.remove('hidden');
+            document.getElementById('lcdTimerDisplay').innerText = "10:00";
+            
+            // Populate class filter in LCD
+            const classFilter = document.getElementById('lcdClassFilter');
+            const unique = [...new Set(students.map(s => s.kls))].sort();
+            classFilter.innerHTML = '<option value="all">SEMUA</option>' + unique.map(c => `<option value="${c}">${c}</option>`).join('');
+        }
+
+        function closeLCDMode() {
+            document.getElementById('lcdModal').classList.add('hidden');
+            resetLcdCountdown();
+        }
+
+        // --- Remote Scanner (Teacher Phone) Logic ---
+        function startRemoteScanner() {
+            document.getElementById('remoteScannerModal').classList.remove('hidden');
+            startHtml5RemoteScanner();
+        }
+
+        function startHtml5RemoteScanner() {
+            if(remoteScannerHtml5QrCode) return; // Already running
+            
+            remoteScannerHtml5QrCode = new Html5Qrcode("remoteScannerVideo");
+            remoteScannerHtml5QrCode.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: 250 }, 
+                (decodedText) => {
+                    // Handle scanned student QR
+                    if(decodedText.startsWith("LOGIN:")) {
+                        const parts = decodedText.replace("LOGIN:", "").split("|");
+                        const studentName = parts[0];
+                        const studentClass = parts[1];
+                        
+                        if(conn && conn.open) {
+                            conn.send({
+                                type: 'SCAN_ENTRY',
+                                payload: { name: studentName, kls: studentClass }
+                            });
+                            
+                            remoteScannerHtml5QrCode.pause();
+                            alert(`Data ${studentName} dihantar ke LCD!`);
+                            remoteScannerHtml5QrCode.resume();
+                        } else {
+                            alert("Terputus sambungan dengan LCD.");
+                        }
+                    }
+                }
+            ).catch(err => {
+                console.log(err);
+                alert("Ralat kamera remote.");
+            });
+        }
+
+        function stopRemoteScanner() {
+            if(remoteScannerHtml5QrCode) {
+                remoteScannerHtml5QrCode.stop().then(() => {
+                    document.getElementById('remoteScannerModal').classList.add('hidden');
+                    remoteScannerHtml5QrCode = null;
+                });
+            } else {
+                document.getElementById('remoteScannerModal').classList.add('hidden');
+            }
+        }
+
+        // --- Scanner Logic (Main) ---
         function toggleScanner() { 
             const m = document.getElementById('scannerModal'); 
             if(!m.classList.contains('hidden')) { if(html5QrCode) html5QrCode.stop(); m.classList.add('hidden'); }
@@ -580,11 +663,9 @@
                                     type: 'SCAN_ENTRY',
                                     payload: { name: sName, kls: sClass }
                                 });
-                                // Visual feedback
-                                alert(`Data ${sName} dihantar ke LCD!`);
-                                // Pause briefly to prevent double scan
                                 html5QrCode.pause();
-                                setTimeout(() => html5QrCode.resume(), 2000);
+                                alert(`Data ${sName} dihantar ke LCD!`);
+                                html5QrCode.resume();
                             } else {
                                 // Default behavior: Open manual entry
                                 activeStudent={name:sName,kls:sClass}; 
@@ -595,22 +676,6 @@
                     } catch(e) { console.log(e); }
                 }); 
             }
-        }
-
-        // --- LCD Functions ---
-        function openLCDMode() {
-            document.getElementById('lcdModal').classList.remove('hidden');
-            document.getElementById('lcdTimerDisplay').innerText = "10:00";
-            
-            // Populate class filter in LCD
-            const classFilter = document.getElementById('lcdClassFilter');
-            const unique = [...new Set(students.map(s => s.kls))].sort();
-            classFilter.innerHTML = '<option value="all">SEMUA</option>' + unique.map(c => `<option value="${c}">${c}</option>`).join('');
-        }
-
-        function closeLCDMode() {
-            document.getElementById('lcdModal').classList.add('hidden');
-            resetLcdCountdown();
         }
 
         // --- LCD Timer Logic ---
@@ -882,5 +947,3 @@
     </script>
 </body>
 </html>
-
-
